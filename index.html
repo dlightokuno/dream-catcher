@@ -383,7 +383,10 @@ function render(){
 // ===== クラウド同期（Firebase：Googleログイン＋Firestore） =====
 // Firebaseコンソール → プロジェクトの設定 → マイアプリ(ウェブ) の firebaseConfig をここに貼る
 const FB_CONFIG={
-  apiKey:"",authDomain:"",projectId:"",appId:""
+  apiKey:"AIzaSyD0qsqqLEuQK2CDInvTnBzVo7cFL1nBaxs",
+  authDomain:"dream-catcher-5d20b.firebaseapp.com",
+  projectId:"dream-catcher-5d20b",
+  appId:"1:224348426159:web:063d7a77f5ec641f21e95a"
 };
 const DEVICE=(()=>{try{let d=localStorage.getItem('dc-device');if(!d){d=Math.random().toString(36).slice(2);localStorage.setItem('dc-device',d)}return d}catch(e){return 'x'}})();
 let fbUser=null,fbDoc=null,pushT=null,syncState='';
