@@ -76,6 +76,12 @@ textarea{width:100%;min-height:70px}
 .nd.root{background:var(--acc);color:var(--bg);font-weight:700;font-size:16px;border:0}
 .nd.goal{border:2px solid var(--acc);font-weight:600}
 .nd.kr{border-style:dashed}
+.pen{opacity:.35;cursor:pointer;font-size:12px;padding:0 3px}
+.nd:hover .pen,.task:hover .pen,strong:hover .pen{opacity:1}
+.nd.root .pen{color:inherit}
+.nd.why{font-size:12px;color:var(--sub);background:none;border-style:dotted}
+input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(--acc)}
+@media(hover:none){.pen{opacity:.7}}
 .nd-date{border:0!important;background:none!important;color:var(--sub)!important;font-size:12px!important;padding:0!important;width:auto;cursor:pointer}
 .cd{font-size:11px;font-weight:700;color:var(--acc);background:var(--acc2);border-radius:99px;padding:0 8px}.cd.soon{color:#b7791f;background:#fdf3dc}.cd.late{color:#fff;background:var(--warn)}
 .mm li>input[type=date]{min-width:0;border-radius:6px;padding:4px 6px}
@@ -128,7 +134,7 @@ textarea{width:100%;min-height:70px}
   .grid4{gap:8px}.grid4 .card{min-height:0}
   .hd{width:calc((100% - 24px)/7)}.hab span{width:100%;height:30px}
   .mm ul{padding-left:14px}.mm li{padding-left:12px}.mm ul ul li::after{width:10px}
-  .nd{font-size:13px;padding:6px 10px;flex-wrap:wrap}
+  .nd{font-size:13px;padding:6px 10px;flex-wrap:wrap;border-radius:12px}
   .mm li>input{min-width:0;width:100%}
   .wbs{min-width:560px}
 }
@@ -165,16 +171,30 @@ function goalProgress(g){
 function todayRow(t){
   const st=t.done?'done':t.started?'started':'';
   return `<div class="task ${t.done?'done':''} ${st}"><span class="st">${t.done?'✅ 完了':t.started?'🔶 着手中':'⬜ 未着手'}</span>
-   <span class="t">${esc(t.title)}${t.repeat?` <span class="muted">${REP[t.repeat]}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
+   <span class="t">${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${REP[t.repeat]}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
    <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
    <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
    <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
+let EDIT='';
+function ed(kind,path,val,ph){const k=kind+':'+path;
+  if(EDIT==k)return `<input class="ed" value="${esc(val)}" placeholder="${ph||''}" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(ent(event))setVal('${kind}','${path}',this.value);if(event.key=='Escape'){EDIT='';render()}" onblur="setVal('${kind}','${path}',this.value)">`;
+  return `${val?esc(val):`<span class="muted">${ph||''}</span>`}<span class="pen" title="編集" onclick="event.stopPropagation();EDIT='${k}';render();setTimeout(()=>{const e=document.querySelector('.ed');if(e){e.focus();e.select()}})">✎</span>`}
+function setVal(kind,path,v){if(!EDIT)return;v=v.trim();EDIT='';const[a,b]=path.split('|'),g=S.goals.find(g=>g.id==a),sb=g&&b?(g.subs||[]).find(x=>x.id==b):null;
+  if(kind=='vision')S.vision=v;
+  else if(kind=='gt'&&v)g.title=v;
+  else if(kind=='gw')g.why=v;
+  else if(kind=='st'&&v)sb.title=v;
+  else if(kind=='sw')sb.why=v;
+  else if(kind=='kr'&&v)g.krs[+b].t=v;
+  else if(kind=='t'&&v)S.tasks.find(t=>t.id==a).title=v;
+  else if(kind=='h'&&v)S.habits.find(h=>h.id==a).title=v;
+  save()}
 function taskRow(t){
   const late=t.due&&t.due<today()&&!t.done;
   return `<div class="task ${t.done?'done':''}">
    <input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')">
-   <span class="t">${esc(t.title)}</span>
+   <span class="t">${ed('t',t.id,t.title)}</span>
    ${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}
    ${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}
    ${t.done?(t.repeat?'<span class="muted">🔁</span>':''):`<select class="rp ${t.repeat?'on':''}" title="繰り返し" onchange="setT('${t.id}','repeat',this.value)">${repOpts(t.repeat)}</select>`}
@@ -190,24 +210,24 @@ map(){
   const W=[['who','誰が'],['what','何を'],['when','いつまでに'],['where','どこで'],['why','なぜ'],['how','どうやって']];
   const wbtn=(o,path)=>{const f=W.filter(([k])=>(o.w||{})[k]).length;return `<span class="wb ${f==6?'full':''}" onclick="event.stopPropagation();tog('w${o.id}')">5W1H ${f}/6</span>`};
   const wpanel=(o,path)=>OPEN.has('w'+o.id)?`<div class="wp">${W.map(([k,l])=>`<label><span>${l}</span><input ${k=='when'?'type="date"':''} value="${esc(k=='when'?dueOf(o):(o.w||{})[k])}" placeholder="${l}" onchange="setW('${path}','${k}',this.value)"></label>`).join('')}</div>`:'';
-  const tnode=t=>`<li><span class="nd ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onclick="event.stopPropagation()" onchange="toggle('${t.id}')">${esc(t.title)}${t.due?`<span class="c">${t.due.slice(5)}</span>`:''}<span onclick="event.stopPropagation();mit('${t.id}')">${t.mit===today()?'★':'☆'}</span><span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delTask('${t.id}')">×</span></span></li>`;
+  const tnode=t=>`<li><span class="nd ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onclick="event.stopPropagation()" onchange="toggle('${t.id}')">${ed('t',t.id,t.title)}${t.due?`<span class="c">${t.due.slice(5)}</span>`:''}<span onclick="event.stopPropagation();mit('${t.id}')">${t.mit===today()?'★':'☆'}</span><span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delTask('${t.id}')">×</span></span></li>`;
   const goals=S.goals.map(g=>{const ts=S.tasks.filter(t=>t.goal==g.id).sort((a,b)=>a.done-b.done);
     const kids=[];
-    if(g.why)kids.push(`<li><span class="nd c">なぜ：${esc(g.why)}</span></li>`);
-    if(g.krs.length)kids.push(node('k'+g.id,'kr','成果指標','',g.krs.map(k=>`<li><span class="nd kr">${esc(k.t)}<span class="c">${k.cur}/${k.target}</span><span class="del" onclick="event.stopPropagation();if(ok(this))delKr('${g.id}',${g.krs.indexOf(k)})">×</span></span></li>`)));
+    kids.push(`<li><span class="nd why">なぜ：${ed('gw',g.id,g.why,'＋ なぜこの目標？を書く')}</span></li>`);
+    if(g.krs.length)kids.push(node('k'+g.id,'kr','成果指標','',g.krs.map(k=>`<li><span class="nd kr">${ed('kr',g.id+'|'+g.krs.indexOf(k),k.t)}<span class="c">${k.cur}/${k.target}</span><span class="del" onclick="event.stopPropagation();if(ok(this))delKr('${g.id}',${g.krs.indexOf(k)})">×</span></span></li>`)));
     const subTree=(parent,lv)=>(g.subs||[]).filter(sb=>(sb.parent||'')==parent).map(sb=>{
       const st=ts.filter(t=>t.sub==sb.id),n=st.filter(t=>t.done).length,path=g.id+'|'+sb.id;
-      const ch=[...subTree(sb.id,lv+1),...st.map(tnode)];
+      const ch=[`<li><span class="nd why">なぜ：${ed('sw',path,sb.why,'＋ なぜ？を書く')}</span></li>`,...subTree(sb.id,lv+1),...st.map(tnode)];
       if(lv==1)ch.push(`<li><input placeholder="＋ 短期目標を追加して Enter" onkeydown="if(ent(event)){OPEN.add('${sb.id}');addSub('${g.id}',this.value,'${sb.id}',this.nextElementSibling.value)}"> <input type="date" title="いつまでに"></li>`);
       ch.push(`<li><input placeholder="＋ タスクを追加して Enter" onkeydown="if(ent(event)){OPEN.add('${sb.id}');addTask(this.value,'${path}')}"></li>`);
-      return node(sb.id,lv==1?'sub':'sub short',`<span class="lv">${lv==1?'中期':'短期'}</span>`+esc(sb.title),`<span class="c">${n}/${st.length}</span><input type="date" class="nd-date" value="${dueOf(sb)}" onclick="event.stopPropagation()" onchange="setW('${path}','when',this.value)">${left(dueOf(sb))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delSub('${g.id}','${sb.id}')">×</span>`,ch)});
+      return node(sb.id,lv==1?'sub':'sub short',`<span class="lv">${lv==1?'中期':'短期'}</span>`+ed('st',path,sb.title),`<span class="c">${n}/${st.length}</span><input type="date" class="nd-date" value="${dueOf(sb)}" onclick="event.stopPropagation()" onchange="setW('${path}','when',this.value)">${left(dueOf(sb))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delSub('${g.id}','${sb.id}')">×</span>`,ch)});
     kids.push(...subTree('',1));
     const open=ts.filter(t=>!t.done&&!t.sub),done=ts.filter(t=>t.done&&!t.sub);
     kids.push(...open.map(tnode));
     if(done.length)kids.push(node('d'+g.id,'','完了済み','',done.map(tnode)));
     kids.push(`<li><input placeholder="＋ 中期目標を追加して Enter" onkeydown="if(ent(event))addSub('${g.id}',this.value,'',this.nextElementSibling.value)"> <input type="date" title="いつまでに"></li>`);
     kids.push(`<li><input placeholder="＋ 次の一歩を追加して Enter" onkeydown="if(ent(event)){OPEN.add('${g.id}');addTask(this.value,'${g.id}')}"></li>`);
-    return node(g.id,'goal',`<span class="lv">長期</span>`+esc(g.title),`<span class="c">${goalProgress(g)}%</span><input type="date" class="nd-date" value="${dueOf(g)}" onclick="event.stopPropagation()" onchange="setW('${g.id}','when',this.value)">${left(dueOf(g))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delGoal('${g.id}')">×</span>`,kids)});
+    return node(g.id,'goal',`<span class="lv">長期</span>`+ed('gt',g.id,g.title),`<span class="c">${goalProgress(g)}%</span><input type="date" class="nd-date" value="${dueOf(g)}" onclick="event.stopPropagation()" onchange="setW('${g.id}','when',this.value)">${left(dueOf(g))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delGoal('${g.id}')">×</span>`,kids)});
   const loose=S.tasks.filter(t=>!t.goal&&!t.done);
   if(loose.length)goals.push(node('loose','','目標なしのタスク','',loose.map(tnode)));
 
@@ -216,7 +236,7 @@ map(){
    <button class="ghost" onclick="OPEN.clear();OPEN.add('root');render()">たたむ</button></h2>
    <div class="card row" style="border:2px dashed var(--acc)"><strong style="color:var(--acc)">＋ 新しい目標</strong><input id="mg" class="grow" placeholder="例：資格を取る（入力して Enter か 追加ボタン）" onkeydown="if(ent(event))mapGoal()"><label class="muted">いつまでに <input id="mgd" type="date"></label><button class="btn" onclick="mapGoal()">追加</button></div>
    <p class="muted">目標の中に「中期目標」「短期目標」「タスク」を足すときは、目標をクリックして開くと一番下に入力欄があります。消したいものは × を押します。日付をクリックすると期限を変更できます。</p>
-   <div class="mm"><ul>${node('root','root',esc(S.vision||'私のビジョン'),'',goals)}</ul></div>`;
+   <div class="mm"><ul>${node('root','root',ed('vision','',S.vision,'＋ ビジョン（将来のなりたい姿）を書く'),'',goals)}</ul></div>`;
 },
 today(){
   const mits=S.tasks.filter(t=>t.mit===today());
@@ -278,7 +298,7 @@ wbs(){
     if(SORT=='goal'&&t.goal!==last){last=t.goal;const g=S.goals.find(g=>g.id==t.goal);
       rows+=`<tr class="grp"><td colspan="5">${g?`${esc(g.title)} <span class="muted">${g.due?'〜'+g.due:''} ・ ${goalProgress(g)}%</span>`:'目標なし'}</td></tr>`}
     const late=t.due&&t.due<today()&&!t.done;
-    rows+=`<tr class="${t.done?'done':''}"><td><input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')"> <span class="t">${esc(t.title)}</span></td>
+    rows+=`<tr class="${t.done?'done':''}"><td><input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')"> <span class="t">${ed('t',t.id,t.title)}</span></td>
      <td>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:'—'}</td>
      <td><select onchange="setPri('${t.id}',this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${pri(t)==n?'selected':''}>${PL[n]}</option>`).join('')}</select></td>
      <td><input type="date" value="${t.due||''}" class="${late?'late':''}" onchange="setT('${t.id}','due',this.value)"></td>
@@ -297,7 +317,7 @@ habits(){
   return `<h2>習慣（小さく、毎日。鎖を切らない）</h2>
   <div class="card row"><input id="ht" class="grow" placeholder="例：英語アプリ10分" onkeydown="if(ent(event))addHabit()"><button class="btn" onclick="addHabit()">追加</button></div>
   <div class="row" style="margin:14px 0 8px"><button class="ghost" onclick="mv(-1)">‹ 前の月</button><strong style="font-size:20px">${Y}年${M}月</strong><button class="ghost" onclick="mv(1)">次の月 ›</button><button class="ghost" onclick="HM=today().slice(0,7);render()">今月</button></div>
-  ${S.habits.map(h=>`<div class="card"><div class="row"><span class="muted" style="font-weight:700">${M}月</span><strong class="grow">${esc(h.title)}</strong><span>🔥${streak(h)}日</span><span class="muted">${M}月は${days.filter(d=>h.log.includes(d)).length}回 / ${n}日</span><button class="x" onclick="if(ok(this))delHabit('${h.id}')">×</button></div>
+  ${S.habits.map(h=>`<div class="card"><div class="row"><span class="muted" style="font-weight:700">${M}月</span><strong class="grow">${ed('h',h.id,h.title)}</strong><span>🔥${streak(h)}日</span><span class="muted">${M}月は${days.filter(d=>h.log.includes(d)).length}回 / ${n}日</span><button class="x" onclick="if(ok(this))delHabit('${h.id}')">×</button></div>
   <div class="hab">${'<div class="hd blank"></div>'.repeat(new Date(Y,M-1,1).getDay())}${days.map((d,i)=>{const w=new Date(Y,M-1,i+1).getDay();return `<div class="hd ${d==today()?'td':''} ${w==0?'sun':w==6?'sat':''}"><small>${i+1}日</small><small class="wd">${WD[w]}</small><span title="${d}" class="${h.log.includes(d)?'on':''} ${d>today()?'fut':''}" onclick="habit('${h.id}','${d}')"></span></div>`}).join('')}</div></div>`).join('')}`;
 },
 review(){
