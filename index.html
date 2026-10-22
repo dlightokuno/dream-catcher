@@ -137,9 +137,12 @@ textarea{width:100%;min-height:70px}
 @media(max-width:600px){.hd.blank{display:flex}}
 @media(hover:hover){.qsel{display:none}}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><button class="ghost" style="margin-left:auto" onclick="loadSample()">サンプルを入れる</button></header>
+<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><span id="acct" style="margin-left:auto;display:flex;gap:6px;align-items:center"></span><button class="ghost" onclick="loadSample()">サンプルを入れる</button></header>
 <main id="app"></main>
 <script>
 const KEY='northstar-v1';
@@ -147,7 +150,7 @@ const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const today=()=>ymd(new Date());
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{vision:'',goals:[],tasks:[],habits:[],reviews:[]};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()};
+const save=()=>{S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
 const id=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TABS={map:'最大目標',today:'今日',inbox:'タスク管理',goals:'目標',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
@@ -377,7 +380,43 @@ function render(){
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   app.innerHTML=V[tab]();
 }
-render();
+// ===== クラウド同期（Firebase：Googleログイン＋Firestore） =====
+// Firebaseコンソール → プロジェクトの設定 → マイアプリ(ウェブ) の firebaseConfig をここに貼る
+const FB_CONFIG={
+  apiKey:"",authDomain:"",projectId:"",appId:""
+};
+const DEVICE=(()=>{try{let d=localStorage.getItem('dc-device');if(!d){d=Math.random().toString(36).slice(2);localStorage.setItem('dc-device',d)}return d}catch(e){return 'x'}})();
+let fbUser=null,fbDoc=null,pushT=null,syncState='';
+function acctUI(){const el=document.getElementById('acct');if(!el)return;
+  if(!FB_CONFIG.apiKey){el.innerHTML='';return}
+  el.innerHTML=fbUser?`<span class="muted" style="font-size:12px">${syncState}</span>${fbUser.photoURL?`<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%" referrerpolicy="no-referrer">`:''}<button class="ghost" onclick="logout()">ログアウト</button>`
+    :`<button class="btn" style="padding:5px 12px;font-size:13px" onclick="login()">ログインして同期</button>`}
+function pushSoon(){if(!fbDoc)return;clearTimeout(pushT);syncState='保存中…';acctUI();pushT=setTimeout(()=>{
+  fbDoc.set({data:JSON.stringify(S),updatedAt:S.updatedAt||Date.now(),device:DEVICE}).then(()=>{syncState='☁ 同期済み';acctUI()}).catch(e=>{syncState='⚠ 同期エラー';acctUI();console.error(e)})},800)}
+function login(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{
+  if(e.code=='auth/popup-blocked'||e.code=='auth/operation-not-supported-in-this-environment')firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());else alert('ログインできませんでした：'+e.message)})}
+function logout(){firebase.auth().signOut()}
+function hasData(x){return x&&((x.tasks||[]).length||(x.goals||[]).length||(x.habits||[]).length)}
+function initSync(){if(!FB_CONFIG.apiKey||!window.firebase)return;
+  firebase.initializeApp(FB_CONFIG);
+  firebase.auth().onAuthStateChanged(async u=>{fbUser=u;if(fbDoc&&fbDoc._unsub)fbDoc._unsub();fbDoc=null;
+    if(!u){syncState='';acctUI();return}
+    syncState='読み込み中…';acctUI();
+    const ref=firebase.firestore().collection('users').doc(u.uid);
+    try{const snap=await ref.get();fbDoc=ref;
+      if(snap.exists){const r=snap.data(),remote=JSON.parse(r.data);
+        if(!hasData(S)||(r.updatedAt||0)>(S.updatedAt||0)){S=remote;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()}
+        else pushSoon()}
+      else pushSoon();
+      syncState='☁ 同期済み';acctUI();
+      ref._unsub=ref.onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
+        if(r.device!==DEVICE&&(r.updatedAt||0)>(S.updatedAt||0)){const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)&&a.value)return;
+          S=JSON.parse(r.data);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();syncState='☁ 他の端末から更新';acctUI()}});
+      fbDoc._unsub=ref._unsub;
+    }catch(e){syncState='⚠ 同期エラー';acctUI();console.error(e)}});
+}
+
+render();acctUI();initSync();
 </script>
 </body>
 </html>
