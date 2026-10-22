@@ -36,7 +36,11 @@ textarea{width:100%;min-height:70px}
 .task:last-child{border:0}
 .task.done .t{text-decoration:line-through;color:var(--sub)}
 .t{flex:1;min-width:8em}
-.rp{font-size:12px;padding:2px 4px;color:var(--sub)}.rp.on{color:var(--acc);border-color:var(--acc);font-weight:700}
+.rp{font:inherit;font-size:12px;padding:3px 8px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:6px;cursor:pointer;white-space:nowrap}.rp.on{color:var(--acc);border-color:var(--acc);font-weight:700}
+.rpp{flex-basis:100%;background:var(--acc2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.wdb{font:inherit;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink)}
+.wdb.sun{color:var(--warn)}.wdb.sat{color:#3b6fb6}
+.wdb.on{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
 .st{font-size:12px;white-space:nowrap;color:var(--sub);min-width:5.5em}
 .sb{font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
 .sb.on2{border-color:#d69e2e;background:#fdf3dc;color:#9c6b12;font-weight:700}
@@ -78,7 +82,7 @@ textarea{width:100%;min-height:70px}
 .nd.kr{border-style:dashed}
 .pen{opacity:.35;cursor:pointer;font-size:12px;padding:0 3px}
 .nd:hover .pen,.task:hover .pen,strong:hover .pen{opacity:1}
-.nd.root .pen{color:inherit}
+.nd.root .pen,.nd.root .muted{color:inherit;opacity:.85}
 .nd.why{font-size:12px;color:var(--sub);background:none;border-style:dotted}
 input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(--acc)}
 @media(hover:none){.pen{opacity:.7}}
@@ -171,7 +175,7 @@ function goalProgress(g){
 function todayRow(t){
   const st=t.done?'done':t.started?'started':'';
   return `<div class="task ${t.done?'done':''} ${st}"><span class="st">${t.done?'✅ 完了':t.started?'🔶 着手中':'⬜ 未着手'}</span>
-   <span class="t">${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${REP[t.repeat]}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
+   <span class="t">${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${repLabel(t)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
    <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
    <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
    <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
@@ -197,9 +201,9 @@ function taskRow(t){
    <span class="t">${ed('t',t.id,t.title)}</span>
    ${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}
    ${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}
-   ${t.done?(t.repeat?'<span class="muted">🔁</span>':''):`<select class="rp ${t.repeat?'on':''}" title="繰り返し" onchange="setT('${t.id}','repeat',this.value)">${repOpts(t.repeat)}</select>`}
+   ${t.done?(t.repeat?`<span class="muted">${repLabel(t)}</span>`:''):`<button class="rp ${t.repeat?'on':''}" title="繰り返し設定" onclick="RPO=RPO=='${t.id}'?'':'${t.id}';render()">${t.repeat?repLabel(t):'🔁 繰り返し'}</button>`}
    <button class="ghost" onclick="mit('${t.id}')">${t.mit===today()?'★':'☆'}</button>
-   <button class="x" onclick="if(ok(this))delTask('${t.id}')">×</button></div>`;
+   <button class="x" onclick="if(ok(this))delTask('${t.id}')">×</button>${RPO==t.id&&!t.done?repPanel(t):''}</div>`;
 }
 function goalOpts(sel){return `<option value="">目標なし</option>`+S.goals.map(g=>`<option value="${g.id}" ${g.id==sel?'selected':''}>${esc(g.title)}</option>`+(g.subs||[]).map(sb=>`<option value="${g.id}|${sb.id}">　└ ${esc(sb.title)}</option>`).join('')).join('')}
 
@@ -334,15 +338,34 @@ review(){
 
 function quickAdd(big){return `<div class="card row"><input id="qa" class="grow" placeholder="${big?'タスクを入力して Enter':'＋ 今日のタスクを追加'}" onkeydown="if(ent(event))addTask(this.value,document.getElementById('qg').value,document.getElementById('qd').value,${!big})"><select id="qg">${goalOpts()}</select><input id="qd" type="date">${big?`<select id="qr">${repOpts()}</select>`:''}</div>`}
 function addTask(title,goal,due,isMit){if(!title.trim())return;const qr=document.getElementById('qr'),rep=qr?qr.value:'';let sub='';[goal,sub]=(goal||'').split('|');S.tasks.push({id:id(),title:title.trim(),goal:goal||'',sub:sub||'',due:due||'',done:false,mit:isMit?today():'',repeat:rep,urgent:false,important:!!goal});save();setTimeout(()=>document.getElementById(goal&&tab=='goals'?'ga'+goal:'qa')?.focus())}
-const REP={'':'🔁 なし',daily:'🔁 毎日',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
+const REP={'':'🔁 なし',daily:'🔁 毎日',everyn:'🔁 ○日ごと',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
+const WDN='日月火水木金土';let RPO='';
 function repOpts(v){return Object.entries(REP).map(([k,l])=>`<option value="${k}" ${k==(v||'')?'selected':''}>${l}</option>`).join('')}
-function nextDue(base,r){const d=new Date((base>today()?base:today())+'T00:00');
+function baseDate(t){return new Date((t.due||today())+'T00:00')}
+function repLabel(t){const r=t.repeat;if(!r)return '';
+  if(r=='everyn')return `🔁 ${t.rn||2}日ごと`;
+  if(r=='weekly'||r=='biweekly'){const ds=(t.rdays&&t.rdays.length?t.rdays:[baseDate(t).getDay()]).slice().sort();return `🔁 ${r=='weekly'?'毎週':'隔週'} ${ds.map(i=>WDN[i]).join('・')}`}
+  if(r=='monthly'){const dt=t.rdate??baseDate(t).getDate();return `🔁 毎月${dt==0?'末日':dt+'日'}`}
+  if(r=='yearly'){const b=baseDate(t);return `🔁 毎年${b.getMonth()+1}/${b.getDate()}`}
+  return REP[r]}
+function repPanel(t){const r=t.repeat||'',ds=t.rdays&&t.rdays.length?t.rdays:[baseDate(t).getDay()],dt=t.rdate??baseDate(t).getDate();
+  return `<div class="rpp"><div class="row"><b>繰り返し</b><select onchange="setT('${t.id}','repeat',this.value)">${repOpts(r)}</select><button class="ghost" style="margin-left:auto" onclick="RPO='';render()">閉じる</button></div>
+  ${r=='everyn'?`<div class="row"><input type="number" min="1" max="365" value="${t.rn||2}" style="width:80px" onchange="setT('${t.id}','rn',Math.max(1,+this.value||1))"> 日ごと</div>`:''}
+  ${r=='weekly'||r=='biweekly'?`<div class="row">曜日：${[1,2,3,4,5,6,0].map(i=>`<button class="wdb ${ds.includes(i)?'on':''} ${i==0?'sun':i==6?'sat':''}" onclick="togDay('${t.id}',${i})">${WDN[i]}</button>`).join('')}</div>`:''}
+  ${r=='monthly'?`<div class="row">毎月 <select onchange="setT('${t.id}','rdate',+this.value)">${[...Array(31)].map((_,i)=>`<option value="${i+1}" ${dt==i+1?'selected':''}>${i+1}日</option>`).join('')}<option value="0" ${dt==0?'selected':''}>末日</option></select> <span class="muted">（31日など無い月は末日）</span></div>`:''}
+  ${r?`<div class="muted">次の予定：完了すると ${nextDue(t.due||today(),t).replace(/-/g,'/')} に次のタスクができます</div>`:''}</div>`}
+function togDay(i,d){const t=S.tasks.find(t=>t.id==i);let ds=t.rdays&&t.rdays.length?t.rdays.slice():[baseDate(t).getDay()];ds=ds.includes(d)?ds.filter(x=>x!=d):[...ds,d];if(!ds.length)return;t.rdays=ds;save()}
+function nextDue(base,t){const r=typeof t=='string'?t:t.repeat;t=typeof t=='string'?{}:t;
+  const d=new Date((base>today()?base:today())+'T00:00'),b=new Date(base+'T00:00');
   if(r=='daily')d.setDate(d.getDate()+1);
+  if(r=='everyn')d.setDate(d.getDate()+(t.rn||2));
   if(r=='weekdays'){do d.setDate(d.getDate()+1);while(d.getDay()==0||d.getDay()==6)}
-  if(r=='weekly')d.setDate(d.getDate()+7);if(r=='biweekly')d.setDate(d.getDate()+14);
-  if(r=='monthly')d.setMonth(d.getMonth()+1);if(r=='yearly')d.setFullYear(d.getFullYear()+1);return ymd(d)}
+  if(r=='weekly'||r=='biweekly'){const ds=t.rdays&&t.rdays.length?t.rdays:[b.getDay()];if(r=='biweekly')d.setDate(d.getDate()+7);do d.setDate(d.getDate()+1);while(!ds.includes(d.getDay()))}
+  if(r=='monthly'){const want=t.rdate??b.getDate(),pick=(y,m)=>{const last=new Date(y,m+1,0).getDate();return new Date(y,m,want==0?last:Math.min(want,last))};
+    let c=pick(d.getFullYear(),d.getMonth());if(c<=d)c=pick(d.getFullYear(),d.getMonth()+1);return ymd(c)}
+  if(r=='yearly')d.setFullYear(d.getFullYear()+1);return ymd(d)}
 function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.done?today():'';
-  if(t.done&&t.repeat&&!t.spawned){t.spawned=id();S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:'',spawned:'',due:nextDue(t.due||today(),t.repeat)})}
+  if(t.done&&t.repeat&&!t.spawned){t.spawned=id();S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:'',spawned:'',due:nextDue(t.due||today(),t)})}
   else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
   save()}
 function mit(i){const t=S.tasks.find(t=>t.id==i);t.mit=t.mit===today()?'':today();save()}
