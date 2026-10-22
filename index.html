@@ -153,7 +153,7 @@ S=S||{vision:'',goals:[],tasks:[],habits:[],reviews:[]};
 const save=()=>{S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
 const id=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const TABS={map:'最大目標',today:'今日',inbox:'タスク管理',goals:'目標',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
+const TABS={map:'目標マインドマップ',goals:'目標',today:'今日',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
 let tab='map';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
 
 function goalName(gid){const g=S.goals.find(g=>g.id==gid);return g?g.title:''}
@@ -211,7 +211,7 @@ map(){
   const loose=S.tasks.filter(t=>!t.goal&&!t.done);
   if(loose.length)goals.push(node('loose','','目標なしのタスク','',loose.map(tnode)));
 
-  return `<h2>最大目標 <span class="muted">— ノードをクリックで展開／たたむ</span>
+  return `<h2>目標マインドマップ <span class="muted">— ノードをクリックで展開／たたむ</span>
    <button class="ghost" onclick="S.goals.forEach(g=>OPEN.add(g.id));OPEN.add('root');render()">すべて開く</button>
    <button class="ghost" onclick="OPEN.clear();OPEN.add('root');render()">たたむ</button></h2>
    <div class="card row" style="border:2px dashed var(--acc)"><strong style="color:var(--acc)">＋ 新しい目標</strong><input id="mg" class="grow" placeholder="例：資格を取る（入力して Enter か 追加ボタン）" onkeydown="if(ent(event))mapGoal()"><label class="muted">いつまでに <input id="mgd" type="date"></label><button class="btn" onclick="mapGoal()">追加</button></div>
