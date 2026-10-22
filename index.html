@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dream Catcher">
+<meta name="theme-color" content="#2f5d50">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Crect width='40' height='52' rx='8' fill='%232f5d50'/%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='20' cy='18' r='12'/%3E%3Cpath d='M20 6 30 12 30 24 20 30 10 24 10 12Z M10 28 9 40M20 30V44M30 28 31 40'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Crect width='40' height='52' fill='%232f5d50'/%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='20' cy='18' r='12'/%3E%3Cpath d='M20 6 30 12 30 24 20 30 10 24 10 12Z M10 28 9 40M20 30V44M30 28 31 40'/%3E%3C/g%3E%3C/svg%3E">
+<title>Dream Catcher</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d1d1b;--sub:#6b6a66;--line:#e4e1d9;--acc:#2f5d50;--acc2:#e8f0ec;--warn:#b5482f}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#211f1d;--ink:#eceae4;--sub:#9a978f;--line:#34322e;--acc:#7fbfa8;--acc2:#24302b;--warn:#e07a5f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;flex-wrap:wrap}
+h1{font-size:18px;margin:0;letter-spacing:.06em;display:flex;align-items:center;gap:8px;color:var(--acc);font-family:Georgia,'Hiragino Mincho ProN',serif}
+.logo{width:28px;height:36px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:0;padding:6px 12px;border-radius:6px;color:var(--sub);cursor:pointer;font:inherit}
+nav button.on{background:var(--acc2);color:var(--acc);font-weight:600}
+main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+h2{font-size:15px;margin:28px 0 10px;color:var(--sub);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+textarea{width:100%;min-height:70px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:160px}
+.row select{max-width:100%}
+.btn{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font:inherit;font-weight:600}
+.ghost{background:none;border:1px solid var(--line);color:var(--sub);border-radius:6px;padding:4px 10px;cursor:pointer;font:inherit;font-size:13px}
+.x{background:none;border:0;color:var(--sub);cursor:pointer;font-size:16px}
+.task{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border:0}
+.task.done .t{text-decoration:line-through;color:var(--sub)}
+.t{flex:1;min-width:8em}
+.rp{font-size:12px;padding:2px 4px;color:var(--sub)}.rp.on{color:var(--acc);border-color:var(--acc);font-weight:700}
+.st{font-size:12px;white-space:nowrap;color:var(--sub);min-width:5.5em}
+.sb{font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.sb.on2{border-color:#d69e2e;background:#fdf3dc;color:#9c6b12;font-weight:700}
+.sb.on{border-color:var(--acc);background:var(--acc);color:var(--bg);font-weight:700}
+.task.started{background:linear-gradient(90deg,#fdf3dc55,transparent)}
+.task{flex-wrap:wrap}
+.tag{max-width:16em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;color:var(--acc);background:var(--acc2);padding:1px 8px;border-radius:99px}
+.due{font-size:12px;color:var(--sub)}.due.late{color:var(--warn)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:var(--acc)}
+.mit{border-left:4px solid var(--acc)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4 .card{min-height:160px}
+.grid4 h3{margin:0 0 6px;font-size:14px}
+.hab{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.hd{display:flex;flex-direction:column;align-items:center;width:30px}
+.hd small{font-size:10px;color:var(--sub);line-height:1.3}
+.hd.sun small{color:var(--warn)}.hd.sat small{color:#3b6fb6}
+.hd.td small{color:var(--acc);font-weight:700}
+.hd.td span{outline:2px solid var(--acc);outline-offset:1px}
+.hab span{width:26px;height:26px;border-radius:5px;background:var(--line);cursor:pointer;margin-top:2px}
+.hab span.fut{opacity:.4}
+.hab span.on{background:var(--acc)}
+.muted{color:var(--sub);font-size:13px}
+.vision{font-size:20px;font-weight:600;line-height:1.5}
+.mm{overflow-x:auto;padding:10px 0}
+.mm ul{list-style:none;margin:0;padding-left:28px;position:relative}
+.mm>ul{padding-left:0}
+.mm li{position:relative;padding:5px 0 5px 18px}
+.mm ul ul li::before{content:'';position:absolute;left:0;top:0;bottom:0;border-left:2px solid var(--line)}
+.mm ul ul li:last-child::before{bottom:50%}
+.mm ul ul li::after{content:'';position:absolute;left:0;top:50%;width:16px;border-top:2px solid var(--line)}
+.mm li>ul>li{animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:translateX(-8px)}}
+.nd{display:inline-flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 14px;cursor:pointer;user-select:none}
+.nd.root{background:var(--acc);color:var(--bg);font-weight:700;font-size:16px;border:0}
+.nd.goal{border:2px solid var(--acc);font-weight:600}
+.nd.kr{border-style:dashed}
+.nd-date{border:0!important;background:none!important;color:var(--sub)!important;font-size:12px!important;padding:0!important;width:auto;cursor:pointer}
+.cd{font-size:11px;font-weight:700;color:var(--acc);background:var(--acc2);border-radius:99px;padding:0 8px}.cd.soon{color:#b7791f;background:#fdf3dc}.cd.late{color:#fff;background:var(--warn)}
+.mm li>input[type=date]{min-width:0;border-radius:6px;padding:4px 6px}
+.nd.short{background:var(--card);border-style:dashed}
+.lv{font-size:11px;padding:0 6px;border-radius:4px;background:var(--acc);color:var(--bg);font-weight:700}
+.nd.root .lv{display:none}
+.wb{font-size:11px;border:1px solid var(--acc);color:var(--acc);border-radius:99px;padding:0 7px;font-weight:600;background:var(--card)}
+.wb.full{background:var(--acc);color:var(--bg)}
+.nr{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.nr>.wp{display:grid;grid-template-columns:repeat(3,minmax(140px,1fr));gap:6px;flex:1;min-width:300px;padding:10px;background:var(--card);border:1px solid var(--acc);border-radius:10px;max-width:560px}
+.wp label{display:flex;flex-direction:column;font-size:11px;color:var(--sub)}
+.wp input{padding:4px 8px;font-size:13px}
+@media(max-width:700px){.nr>.wp{grid-template-columns:1fr 1fr}}
+.nd .del{color:var(--sub);opacity:.35;padding:0 2px;font-size:14px}
+.nd:hover .del{opacity:1}.nd .del:hover{color:var(--warn)}
+.mm li>input{border:1.5px dashed var(--acc);border-radius:99px;background:none;min-width:220px}
+.nd.sub{border:1.5px solid var(--acc);background:var(--acc2);color:var(--acc);font-weight:600}
+.nd.done{opacity:.5;text-decoration:line-through}
+.nd .c{font-size:12px;color:var(--sub)}
+.nd.root .c{color:inherit}
+.drag{cursor:grab;background:var(--card)}.dragging{opacity:.4}.drop.over{outline:2px dashed var(--acc);background:var(--acc2)}
+.wbs{width:100%;border-collapse:collapse;min-width:640px}
+.wbs th{text-align:left;font-size:13px;color:var(--sub);padding:10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+.wbs th.on{color:var(--acc)}
+.wbs td{padding:6px 10px;border-bottom:1px solid var(--line)}
+.wbs tr.grp td{background:var(--acc2);font-weight:600;color:var(--acc)}
+.wbs tr.done .t{text-decoration:line-through;color:var(--sub)}
+.wbs input.late{color:var(--warn)}
+.wbs select,.wbs input[type=date]{padding:3px 6px;font-size:13px}
+.arm{color:#fff!important;background:var(--warn)!important;opacity:1!important;border-radius:99px;padding:0 8px!important;font-size:12px!important}
+@media(max-width:600px){.grid4{grid-template-columns:1fr}}
+
+@media(max-width:600px){
+  header{padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top))}
+  h1{font-size:16px}.logo{width:22px;height:28px}
+  header>.ghost{font-size:11px;padding:3px 8px}
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);flex-wrap:nowrap;overflow-x:auto;gap:0;padding:4px 4px max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 16px #0001;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex:0 0 auto;font-size:12px;padding:8px 10px;border-radius:8px;white-space:nowrap}
+  main{padding:12px 12px 110px}
+  input,select,textarea{font-size:16px}
+  .card{padding:12px}
+  .row>input.grow,.row>select{width:100%}
+  .task{gap:8px;padding:10px 0}
+  .task input[type=checkbox]{width:22px;height:22px}
+  .sb{padding:8px 12px;font-size:14px}
+  .ghost{padding:6px 10px}
+  .x{font-size:20px;padding:4px 8px}
+  .vision{font-size:17px}
+  .grid4{gap:8px}.grid4 .card{min-height:0}
+  .hd{width:calc((100% - 24px)/7)}.hab span{width:100%;height:30px}
+  .mm ul{padding-left:14px}.mm li{padding-left:12px}.mm ul ul li::after{width:10px}
+  .nd{font-size:13px;padding:6px 10px;flex-wrap:wrap}
+  .mm li>input{min-width:0;width:100%}
+  .wbs{min-width:560px}
+}
+.qsel{font-size:12px;padding:2px 4px}
+.hd.blank{display:none}
+@media(max-width:600px){.hd.blank{display:flex}}
+@media(hover:hover){.qsel{display:none}}
+</style>
+</head>
+<body>
+<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><button class="ghost" style="margin-left:auto" onclick="loadSample()">サンプルを入れる</button></header>
+<main id="app"></main>
+<script>
+const KEY='northstar-v1';
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>ymd(new Date());
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=S||{vision:'',goals:[],tasks:[],habits:[],reviews:[]};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()};
+const id=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TABS={map:'最大目標',today:'今日',inbox:'タスク管理',goals:'目標',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
+let tab='map';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
+
+function goalName(gid){const g=S.goals.find(g=>g.id==gid);return g?g.title:''}
+function subName(t){const g=S.goals.find(g=>g.id==t.goal),sb=g&&(g.subs||[]).find(x=>x.id==t.sub);return sb?' › '+sb.title:''}
+function goalProgress(g){
+  if(g.krs.length){return Math.round(g.krs.reduce((a,k)=>a+Math.min(1,k.cur/(k.target||1)),0)/g.krs.length*100)}
+  const ts=S.tasks.filter(t=>t.goal==g.id);return ts.length?Math.round(ts.filter(t=>t.done).length/ts.length*100):0;
+}
+function todayRow(t){
+  const st=t.done?'done':t.started?'started':'';
+  return `<div class="task ${t.done?'done':''} ${st}"><span class="st">${t.done?'✅ 完了':t.started?'🔶 着手中':'⬜ 未着手'}</span>
+   <span class="t">${esc(t.title)}${t.repeat?` <span class="muted">${REP[t.repeat]}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
+   <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
+   <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
+   <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
+function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
+function taskRow(t){
+  const late=t.due&&t.due<today()&&!t.done;
+  return `<div class="task ${t.done?'done':''}">
+   <input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')">
+   <span class="t">${esc(t.title)}</span>
+   ${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}
+   ${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}
+   ${t.done?(t.repeat?'<span class="muted">🔁</span>':''):`<select class="rp ${t.repeat?'on':''}" title="繰り返し" onchange="setT('${t.id}','repeat',this.value)">${repOpts(t.repeat)}</select>`}
+   <button class="ghost" onclick="mit('${t.id}')">${t.mit===today()?'★':'☆'}</button>
+   <button class="x" onclick="if(ok(this))delTask('${t.id}')">×</button></div>`;
+}
+function goalOpts(sel){return `<option value="">目標なし</option>`+S.goals.map(g=>`<option value="${g.id}" ${g.id==sel?'selected':''}>${esc(g.title)}</option>`+(g.subs||[]).map(sb=>`<option value="${g.id}|${sb.id}">　└ ${esc(sb.title)}</option>`).join('')).join('')}
+
+const V={
+map(){
+  const node=(key,cls,label,extra,kids,side)=>{const has=kids&&kids.length,open=OPEN.has(key);
+    return `<li><div class="nr"><span class="nd ${cls}" onclick="${has?`tog('${key}')`:''}">${label}${extra||''}${has?`<span class="c">${open?'−':'+'+kids.length}</span>`:''}</span>${side||''}</div>${has&&open?`<ul>${kids.join('')}</ul>`:''}</li>`};
+  const W=[['who','誰が'],['what','何を'],['when','いつまでに'],['where','どこで'],['why','なぜ'],['how','どうやって']];
+  const wbtn=(o,path)=>{const f=W.filter(([k])=>(o.w||{})[k]).length;return `<span class="wb ${f==6?'full':''}" onclick="event.stopPropagation();tog('w${o.id}')">5W1H ${f}/6</span>`};
+  const wpanel=(o,path)=>OPEN.has('w'+o.id)?`<div class="wp">${W.map(([k,l])=>`<label><span>${l}</span><input ${k=='when'?'type="date"':''} value="${esc(k=='when'?dueOf(o):(o.w||{})[k])}" placeholder="${l}" onchange="setW('${path}','${k}',this.value)"></label>`).join('')}</div>`:'';
+  const tnode=t=>`<li><span class="nd ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onclick="event.stopPropagation()" onchange="toggle('${t.id}')">${esc(t.title)}${t.due?`<span class="c">${t.due.slice(5)}</span>`:''}<span onclick="event.stopPropagation();mit('${t.id}')">${t.mit===today()?'★':'☆'}</span><span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delTask('${t.id}')">×</span></span></li>`;
+  const goals=S.goals.map(g=>{const ts=S.tasks.filter(t=>t.goal==g.id).sort((a,b)=>a.done-b.done);
+    const kids=[];
+    if(g.why)kids.push(`<li><span class="nd c">なぜ：${esc(g.why)}</span></li>`);
+    if(g.krs.length)kids.push(node('k'+g.id,'kr','成果指標','',g.krs.map(k=>`<li><span class="nd kr">${esc(k.t)}<span class="c">${k.cur}/${k.target}</span><span class="del" onclick="event.stopPropagation();if(ok(this))delKr('${g.id}',${g.krs.indexOf(k)})">×</span></span></li>`)));
+    const subTree=(parent,lv)=>(g.subs||[]).filter(sb=>(sb.parent||'')==parent).map(sb=>{
+      const st=ts.filter(t=>t.sub==sb.id),n=st.filter(t=>t.done).length,path=g.id+'|'+sb.id;
+      const ch=[...subTree(sb.id,lv+1),...st.map(tnode)];
+      if(lv==1)ch.push(`<li><input placeholder="＋ 短期目標を追加して Enter" onkeydown="if(ent(event)){OPEN.add('${sb.id}');addSub('${g.id}',this.value,'${sb.id}',this.nextElementSibling.value)}"> <input type="date" title="いつまでに"></li>`);
+      ch.push(`<li><input placeholder="＋ タスクを追加して Enter" onkeydown="if(ent(event)){OPEN.add('${sb.id}');addTask(this.value,'${path}')}"></li>`);
+      return node(sb.id,lv==1?'sub':'sub short',`<span class="lv">${lv==1?'中期':'短期'}</span>`+esc(sb.title),`<span class="c">${n}/${st.length}</span><input type="date" class="nd-date" value="${dueOf(sb)}" onclick="event.stopPropagation()" onchange="setW('${path}','when',this.value)">${left(dueOf(sb))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delSub('${g.id}','${sb.id}')">×</span>`,ch)});
+    kids.push(...subTree('',1));
+    const open=ts.filter(t=>!t.done&&!t.sub),done=ts.filter(t=>t.done&&!t.sub);
+    kids.push(...open.map(tnode));
+    if(done.length)kids.push(node('d'+g.id,'','完了済み','',done.map(tnode)));
+    kids.push(`<li><input placeholder="＋ 中期目標を追加して Enter" onkeydown="if(ent(event))addSub('${g.id}',this.value,'',this.nextElementSibling.value)"> <input type="date" title="いつまでに"></li>`);
+    kids.push(`<li><input placeholder="＋ 次の一歩を追加して Enter" onkeydown="if(ent(event)){OPEN.add('${g.id}');addTask(this.value,'${g.id}')}"></li>`);
+    return node(g.id,'goal',`<span class="lv">長期</span>`+esc(g.title),`<span class="c">${goalProgress(g)}%</span><input type="date" class="nd-date" value="${dueOf(g)}" onclick="event.stopPropagation()" onchange="setW('${g.id}','when',this.value)">${left(dueOf(g))}<span class="del" title="削除" onclick="event.stopPropagation();if(ok(this))delGoal('${g.id}')">×</span>`,kids)});
+  const loose=S.tasks.filter(t=>!t.goal&&!t.done);
+  if(loose.length)goals.push(node('loose','','目標なしのタスク','',loose.map(tnode)));
+
+  return `<h2>最大目標 <span class="muted">— ノードをクリックで展開／たたむ</span>
+   <button class="ghost" onclick="S.goals.forEach(g=>OPEN.add(g.id));OPEN.add('root');render()">すべて開く</button>
+   <button class="ghost" onclick="OPEN.clear();OPEN.add('root');render()">たたむ</button></h2>
+   <div class="card row" style="border:2px dashed var(--acc)"><strong style="color:var(--acc)">＋ 新しい目標</strong><input id="mg" class="grow" placeholder="例：資格を取る（入力して Enter か 追加ボタン）" onkeydown="if(ent(event))mapGoal()"><label class="muted">いつまでに <input id="mgd" type="date"></label><button class="btn" onclick="mapGoal()">追加</button></div>
+   <p class="muted">目標の中に「中期目標」「短期目標」「タスク」を足すときは、目標をクリックして開くと一番下に入力欄があります。消したいものは × を押します。日付をクリックすると期限を変更できます。</p>
+   <div class="mm"><ul>${node('root','root',esc(S.vision||'私のビジョン'),'',goals)}</ul></div>`;
+},
+today(){
+  const mits=S.tasks.filter(t=>t.mit===today());
+  const due=S.tasks.filter(t=>!t.done&&t.mit!==today()&&t.due&&t.due<=today());
+  const doneToday=S.tasks.filter(t=>t.doneAt===today()).length;
+  const pool=S.tasks.filter(t=>!t.done&&t.mit!==today()).sort((a,b)=>(a.due||'9999')<(b.due||'9999')?-1:1);
+  return `${S.vision?`<div class="card"><div class="muted">ビジョン</div><div class="vision">${esc(S.vision)}</div></div>`:''}
+  <h2>今日の最重要3つ（MIT）<span class="muted"> 完了 ${mits.filter(t=>t.done).length} ・ 着手中 ${mits.filter(t=>t.started&&!t.done).length} ・ 全${mits.length}件</span></h2>
+  <div class="card mit">${mits.length?mits.map(todayRow).join(''):'<p class="muted">下の「新しく追加」か「タスク管理から選ぶ」で、今日やることを決めましょう。</p>'}
+  ${mits.length>3?'<p class="muted" style="color:var(--warn)">3つを超えています。本当に今日全部必要？</p>':''}</div>
+  <h2>＋ 今日のタスクを新しく追加</h2>
+  <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
+  <h2>＋ タスク管理から選ぶ <span class="muted">${pool.length}件 ・ 期限が近い順</span></h2>
+  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool"><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
+  <h2>期限が今日・過ぎたもの</h2><div class="card">${due.length?due.map(taskRow).join(''):'<p class="muted">なし 🎉</p>'}</div>
+  <h2>今日の習慣</h2><div class="card">${S.habits.length?S.habits.map(h=>`<div class="task ${h.log.includes(today())?'done':''}"><input type="checkbox" ${h.log.includes(today())?'checked':''} onchange="habit('${h.id}','${today()}')"><span class="t">${esc(h.title)}</span><span class="muted">🔥${streak(h)}日</span></div>`).join(''):'<p class="muted">習慣タブで追加</p>'}</div>`;
+},
+inbox(){
+  const open=S.tasks.filter(t=>!t.done);
+  const done=S.tasks.filter(t=>t.done).slice(-15).reverse();
+  return `<h2>思いついたらまず放り込む</h2>${quickAdd(true)}
+  <h2>未完了 ${open.length}</h2><div class="card">${open.map(taskRow).join('')||'<p class="muted">空っぽ</p>'}</div>
+  <h2>最近完了</h2><div class="card">${done.map(taskRow).join('')||'<p class="muted">—</p>'}</div>`;
+},
+goals(){
+  return `<h2>ビジョン（3〜5年後どうなっていたい？）</h2>
+  <div class="card"><textarea onchange="S.vision=this.value;save()" placeholder="例：自分の事業で家族と自由な時間を持てている">${esc(S.vision)}</textarea></div>
+  <h2>目標（OKR：目標＋測れる成果指標）</h2>
+  <div class="card row"><input id="gt" class="grow" placeholder="目標（例：英語で商談できる）"><input id="gd" type="date"><button class="btn" onclick="addGoal()">追加</button></div>
+  ${S.goals.map(g=>{const p=goalProgress(g),ts=S.tasks.filter(t=>t.goal==g.id);return `<div class="card">
+   <div class="row"><strong class="grow">${esc(g.title)}</strong><span class="muted">${g.due?'〜'+g.due:''}</span><strong>${p}%</strong><button class="x" onclick="if(ok(this))delGoal('${g.id}')">×</button></div>
+   <div class="bar"><i style="width:${p}%"></i></div>
+   <div class="muted">なぜ？ <input style="width:70%" value="${esc(g.why)}" placeholder="この目標が大事な理由" onchange="setG('${g.id}','why',this.value)"></div>
+   <h2 style="margin:12px 0 4px">成果指標 (Key Results)</h2>
+   ${g.krs.map((k,i)=>`<div class="row"><span class="grow">${esc(k.t)}</span><input type="number" style="width:80px" value="${k.cur}" onchange="setKr('${g.id}',${i},this.value)"> / ${k.target}<button class="x" onclick="if(ok(this))delKr('${g.id}',${i})">×</button></div>`).join('')}
+   <div class="row" style="margin-top:6px"><input id="kr${g.id}" class="grow" placeholder="例：TOEIC 850点"><input id="kt${g.id}" type="number" style="width:80px" placeholder="目標値"><button class="ghost" onclick="addKr('${g.id}')">＋KR</button></div>
+   <h2 style="margin:12px 0 4px">中間目標（マイルストーン）</h2>
+   ${(g.subs||[]).map(sb=>`<div class="row"><span class="grow">◆ ${esc(sb.title)}</span><input type="date" value="${sb.due||''}" onchange="setSub('${g.id}','${sb.id}',this.value)"><span class="muted">${ts.filter(t=>t.sub==sb.id&&t.done).length}/${ts.filter(t=>t.sub==sb.id).length}</span><button class="x" onclick="if(ok(this))delSub('${g.id}','${sb.id}')">×</button></div>`).join('')}
+   <div class="row"><input class="grow" placeholder="例：TOEIC 750点を取る（3ヶ月後）" onkeydown="if(ent(event))addSub('${g.id}',this.value)"></div>
+   <h2 style="margin:12px 0 4px">次の行動</h2>${ts.map(taskRow).join('')}
+   <div class="row"><input id="ga${g.id}" class="grow" placeholder="具体的な次の一歩" onkeydown="if(ent(event))addTask(this.value,'${g.id}')"></div></div>`}).join('')}`;
+},
+matrix(){
+  const q=(u,i)=>S.tasks.filter(t=>!t.done&&!!t.urgent==u&&!!t.important==i);
+  const box=(u,i,title,hint)=>`<div class="card drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTo(event,${u},${i})"><h3>${title}</h3><div class="muted">${hint}</div><input style="width:100%;margin:6px 0" placeholder="＋ ここに追加して Enter" onkeydown="if(ent(event)&&this.value.trim()){S.tasks.push({id:id(),title:this.value.trim(),goal:'',due:'',done:false,mit:'',urgent:!!${u},important:!!${i}});save()}">${q(u,i).map(t=>`<div class="task drag" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${t.id}');this.classList.add('dragging')" ondragend="this.classList.remove('dragging')"><span class="t">⋮⋮ ${esc(t.title)}</span><select class="qsel" title="象限を変更" onchange="setPri('${t.id}',this.value)">${['','第１','第２','第３','第４'].map((l,n)=>n?`<option value="${n}" ${(u&&i?1:i?2:u?3:4)==n?'selected':''}>${l}</option>`:'').join('')}</select>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}</div>`).join('')}</div>`;
+  return `<h2>アイゼンハワー・マトリクス（タスクをドラッグして移動）</h2><div class="grid4">
+  ${box(1,1,'① 今すぐやる','緊急×重要')}${box(0,1,'② 予定に入れる','重要だが緊急でない ← 目標達成はここ')}
+  ${box(1,0,'③ 任せる・減らす','緊急だが重要でない')}${box(0,0,'④ やめる','どちらでもない')}</div>`;
+},
+wbs(){
+  const pri=t=>t.important&&t.urgent?1:t.important?2:t.urgent?3:4;
+  const PL=['','第１象限（重要×緊急）','第２象限（重要×緊急ではない）','第３象限（重要ではない×緊急）','第４象限（重要ではない×緊急ではない）'];
+  const keys={goal:t=>(S.goals.findIndex(g=>g.id==t.goal)+1||999),pri,due:t=>t.due||'9999',status:t=>t.done?1:0,title:t=>t.title};
+  let ts=S.tasks.filter(t=>SHOWDONE||!t.done);
+  ts=ts.slice().sort((a,b)=>{const x=keys[SORT](a),y=keys[SORT](b);return x<y?-1:x>y?1:(a.due||'9999')<(b.due||'9999')?-1:1});
+  const th=(k,l)=>`<th onclick="SORT='${k}';render()" class="${SORT==k?'on':''}">${l}${SORT==k?' ▲':''}</th>`;
+  let rows='',last=null;
+  ts.forEach(t=>{
+    if(SORT=='goal'&&t.goal!==last){last=t.goal;const g=S.goals.find(g=>g.id==t.goal);
+      rows+=`<tr class="grp"><td colspan="5">${g?`${esc(g.title)} <span class="muted">${g.due?'〜'+g.due:''} ・ ${goalProgress(g)}%</span>`:'目標なし'}</td></tr>`}
+    const late=t.due&&t.due<today()&&!t.done;
+    rows+=`<tr class="${t.done?'done':''}"><td><input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')"> <span class="t">${esc(t.title)}</span></td>
+     <td>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:'—'}</td>
+     <td><select onchange="setPri('${t.id}',this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${pri(t)==n?'selected':''}>${PL[n]}</option>`).join('')}</select></td>
+     <td><input type="date" value="${t.due||''}" class="${late?'late':''}" onchange="setT('${t.id}','due',this.value)"></td>
+     <td>${t.done?'完了':t.started?'🔶 着手中':late?'<span style="color:var(--warn)">遅れ</span>':t.mit===today()?'★今日':'未着手'}</td></tr>`});
+  return `<h2>全タスク一覧（WBS）</h2>
+  <div class="row" style="margin-bottom:10px"><span class="muted">並び替え：</span>
+   ${[['goal','目標別'],['pri','象限順'],['due','期限が近い順'],['status','未完了を上に']].map(([k,l])=>`<button class="${SORT==k?'btn':'ghost'}" onclick="SORT='${k}';render()">${l}</button>`).join('')}
+   <label class="muted" style="margin-left:auto"><input type="checkbox" ${SHOWDONE?'checked':''} onchange="SHOWDONE=this.checked;render()"> 完了も表示</label></div>
+  ${quickAdd(true)}
+  <div class="card" style="overflow-x:auto;padding:0"><table class="wbs"><thead><tr>${th('title','タスク')}${th('goal','目標')}${th('pri','象限')}${th('due','期限')}${th('status','状態')}</tr></thead>
+  <tbody>${rows||'<tr><td colspan="5" class="muted">タスクがありません</td></tr>'}</tbody></table></div>`;
+},
+habits(){
+  const [Y,M]=HM.split('-').map(Number),n=new Date(Y,M,0).getDate(),pad=x=>String(x).padStart(2,'0');
+  const days=[...Array(n)].map((_,i)=>`${Y}-${pad(M)}-${pad(i+1)}`),WD='日月火水木金土';
+  return `<h2>習慣（小さく、毎日。鎖を切らない）</h2>
+  <div class="card row"><input id="ht" class="grow" placeholder="例：英語アプリ10分" onkeydown="if(ent(event))addHabit()"><button class="btn" onclick="addHabit()">追加</button></div>
+  <div class="row" style="margin:14px 0 8px"><button class="ghost" onclick="mv(-1)">‹ 前の月</button><strong style="font-size:20px">${Y}年${M}月</strong><button class="ghost" onclick="mv(1)">次の月 ›</button><button class="ghost" onclick="HM=today().slice(0,7);render()">今月</button></div>
+  ${S.habits.map(h=>`<div class="card"><div class="row"><span class="muted" style="font-weight:700">${M}月</span><strong class="grow">${esc(h.title)}</strong><span>🔥${streak(h)}日</span><span class="muted">${M}月は${days.filter(d=>h.log.includes(d)).length}回 / ${n}日</span><button class="x" onclick="if(ok(this))delHabit('${h.id}')">×</button></div>
+  <div class="hab">${'<div class="hd blank"></div>'.repeat(new Date(Y,M-1,1).getDay())}${days.map((d,i)=>{const w=new Date(Y,M-1,i+1).getDay();return `<div class="hd ${d==today()?'td':''} ${w==0?'sun':w==6?'sat':''}"><small>${i+1}日</small><small class="wd">${WD[w]}</small><span title="${d}" class="${h.log.includes(d)?'on':''} ${d>today()?'fut':''}" onclick="habit('${h.id}','${d}')"></span></div>`}).join('')}</div></div>`).join('')}`;
+},
+review(){
+  const wk=new Date();wk.setDate(wk.getDate()-7);const w=ymd(wk);
+  const done=S.tasks.filter(t=>t.doneAt&&t.doneAt>=w);
+  return `<h2>今週の実績</h2><div class="card">完了 <strong>${done.length}</strong> 件
+   ${S.goals.map(g=>`<div class="row"><span class="grow">${esc(g.title)}</span><div class="bar" style="width:120px"><i style="width:${goalProgress(g)}%"></i></div>${goalProgress(g)}%</div>`).join('')}</div>
+  <h2>振り返り（毎週15分）</h2><div class="card">
+   <p class="muted">① うまくいったこと ② うまくいかなかったこと・原因 ③ 来週の最重要3つ</p>
+   <textarea id="rv" style="min-height:140px" placeholder="①\n②\n③"></textarea>
+   <div class="row" style="margin-top:8px"><button class="btn" onclick="addReview()">保存</button><button class="ghost" onclick="exportData()">データを書き出す</button><label class="ghost">読み込む<input type="file" hidden accept=".json" onchange="importData(this)"></label></div></div>
+  <h2>過去のレビュー</h2>${S.reviews.slice().reverse().map(r=>`<div class="card"><div class="muted">${r.date}（完了${r.n}件）</div><div style="white-space:pre-wrap">${esc(r.text)}</div></div>`).join('')}`;
+}};
+
+function quickAdd(big){return `<div class="card row"><input id="qa" class="grow" placeholder="${big?'タスクを入力して Enter':'＋ 今日のタスクを追加'}" onkeydown="if(ent(event))addTask(this.value,document.getElementById('qg').value,document.getElementById('qd').value,${!big})"><select id="qg">${goalOpts()}</select><input id="qd" type="date">${big?`<select id="qr">${repOpts()}</select>`:''}</div>`}
+function addTask(title,goal,due,isMit){if(!title.trim())return;const qr=document.getElementById('qr'),rep=qr?qr.value:'';let sub='';[goal,sub]=(goal||'').split('|');S.tasks.push({id:id(),title:title.trim(),goal:goal||'',sub:sub||'',due:due||'',done:false,mit:isMit?today():'',repeat:rep,urgent:false,important:!!goal});save();setTimeout(()=>document.getElementById(goal&&tab=='goals'?'ga'+goal:'qa')?.focus())}
+const REP={'':'🔁 なし',daily:'🔁 毎日',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
+function repOpts(v){return Object.entries(REP).map(([k,l])=>`<option value="${k}" ${k==(v||'')?'selected':''}>${l}</option>`).join('')}
+function nextDue(base,r){const d=new Date((base>today()?base:today())+'T00:00');
+  if(r=='daily')d.setDate(d.getDate()+1);
+  if(r=='weekdays'){do d.setDate(d.getDate()+1);while(d.getDay()==0||d.getDay()==6)}
+  if(r=='weekly')d.setDate(d.getDate()+7);if(r=='biweekly')d.setDate(d.getDate()+14);
+  if(r=='monthly')d.setMonth(d.getMonth()+1);if(r=='yearly')d.setFullYear(d.getFullYear()+1);return ymd(d)}
+function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.done?today():'';
+  if(t.done&&t.repeat&&!t.spawned){t.spawned=id();S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:'',spawned:'',due:nextDue(t.due||today(),t.repeat)})}
+  else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
+  save()}
+function mit(i){const t=S.tasks.find(t=>t.id==i);t.mit=t.mit===today()?'':today();save()}
+function delTask(i){S.tasks=S.tasks.filter(t=>t.id!=i);save()}
+function dropTo(e,u,i){e.preventDefault();const t=S.tasks.find(t=>t.id==e.dataTransfer.getData('text/plain'));if(t){t.urgent=!!u;t.important=!!i;save()}}
+function setPri(i,n){const t=S.tasks.find(t=>t.id==i);n=+n;t.important=n<=2;t.urgent=n==1||n==3;save()}
+function setT(i,k,v){S.tasks.find(t=>t.id==i)[k]=v;save()}
+function loadSample(){
+  if(S.tasks.length&&!ok(event.target,'もう一度押すと置き換え'))return;
+  const d=n=>{const x=new Date();x.setDate(x.getDate()+n);return ymd(x)};
+  const T=(title,goal,due,u,i,o={})=>({id:id(),title,goal,due:due===null?'':d(due),done:false,mit:'',urgent:u,important:i,...o});
+  S={vision:'好きな仕事で、家族と自由な時間を持てている',reviews:[],
+   goals:[{id:'g1',title:'副業で月10万円の収入をつくる',due:d(160),why:'会社以外の収入の柱がほしい',krs:[{t:'月の売上（万円）',target:10,cur:3},{t:'継続クライアント数',target:3,cur:1}],w:{who:'自分',what:'Web制作の副業',when:d(160),where:'自宅・オンライン',why:'収入の柱を増やす',how:'SNS集客＋紹介'},subs:[{id:'s1',title:'集客の仕組みをつくる',due:d(45),parent:'',w:{who:'自分',what:'SNSとポートフォリオ',when:d(45),how:'週3投稿'}},{id:'s1a',title:'ポートフォリオ公開',due:d(14),parent:'s1'},{id:'s1b',title:'フォロワー300人',due:d(40),parent:'s1'},{id:'s2',title:'初の継続案件を獲得',due:d(90),parent:''}]},
+    {id:'g2',title:'英語で商談できるようになる',due:d(220),why:'海外の顧客と直接話したい',krs:[{t:'TOEICスコア',target:850,cur:690},{t:'オンライン英会話回数',target:100,cur:34}],subs:[{id:'s3',title:'TOEIC 750点',due:d(90),parent:''},{id:'s3a',title:'単語1000語',due:d(30),parent:'s3'}]},
+    {id:'g3',title:'体重を5kg落とす',due:d(100),why:'疲れにくい体で集中したい',krs:[{t:'減量(kg)',target:5,cur:2}]}],
+   tasks:[T('ポートフォリオサイトを更新','g1',2,1,1,{sub:'s1a',mit:today()}),T('クライアントA 納品','g1',0,1,1,{sub:'s2',mit:today()}),T('SNS発信の計画を立てる','g1',7,0,1,{sub:'s1'}),T('料金表を見直す','g1',14,0,1,{sub:'s2'}),T('見積書テンプレ作成','g1',-5,0,1,{done:true,doneAt:d(-5)}),
+    T('英会話レッスン予約','g2',1,1,1,{mit:today()}),T('単語帳 1〜200','g2',10,0,1,{sub:'s3'}),T('TOEIC申込み','g2',20,0,1,{sub:'s3'}),T('ビジネス英語本を読む','g2',30,0,1),
+    T('ジムの入会手続き','g3',-2,0,1,{done:true,doneAt:d(-2)}),T('1週間の献立を決める','g3',3,0,1),
+    T('飲み会の出欠返信','',0,1,0),T('メール整理','',1,1,0),T('SNSを何となく見る','',null,0,0),T('税金の書類を提出','',-1,1,1)],
+   habits:[{id:'h1',title:'英語アプリ10分',log:[...Array(12)].map((_,i)=>d(-i))},{id:'h2',title:'朝の散歩',log:[0,1,2,4,5,7,8,9,12,15].map(i=>d(-i))},{id:'h3',title:'日記を書く',log:[1,2,3,6,9].map(i=>d(-i))}]};
+  S.goals.forEach(g=>OPEN.add(g.id));save();
+}
+function flag(i,k){const t=S.tasks.find(t=>t.id==i);t[k]=!t[k];save()}
+function left(due){if(!due)return '';const a=new Date(today()),b=new Date(due),days=Math.round((b-a)/864e5);
+  if(days<0)return `<span class="cd late">${-days}日超過</span>`;if(days==0)return '<span class="cd soon">今日まで</span>';
+  let m=(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.getMonth();if(b.getDate()<a.getDate())m--;
+  const c=new Date(a);c.setMonth(c.getMonth()+m);const dd=Math.round((b-c)/864e5);
+  const y=Math.floor(m/12),mm=m%12,txt=`あと${y?y+'年':''}${mm?mm+'ヶ月':''}${dd?dd+'日':''}`+(m>=1?`（${days}日）`:'');
+  return `<span class="cd ${days<=7?'soon':''}">${txt}</span>`}
+function dueOf(o){return o.due||(o.w&&o.w.when)||''}
+function ent(e){return e.key=='Enter'&&!e.isComposing&&e.keyCode!==229}
+function ok(el,msg){if(el.dataset.arm)return true;const o=el.innerHTML;el.dataset.arm=1;el.innerHTML=msg||'削除する？';el.classList.add('arm');setTimeout(()=>{if(el.isConnected){delete el.dataset.arm;el.innerHTML=o;el.classList.remove('arm')}},3000);return false}
+function mapGoal(){const t=mg.value.trim();if(!t)return;const g={id:id(),title:t,due:mgd.value,why:'',krs:[],subs:[],w:{when:mgd.value}};S.goals.push(g);OPEN.add(g.id);save()}
+function setW(path,k,v){const[gid,sid]=path.split('|'),g=S.goals.find(g=>g.id==gid),o=sid?g.subs.find(x=>x.id==sid):g;(o.w=o.w||{})[k]=v;if(k=='when')o.due=v;save()}
+function addSub(gid,t,parent,due){t=t.trim();if(!t)return;const g=S.goals.find(g=>g.id==gid);(g.subs=g.subs||[]).push({id:id(),title:t,due:due||'',parent:parent||'',w:{when:due||''}});OPEN.add(gid);save()}
+function setSub(gid,sid,v){S.goals.find(g=>g.id==gid).subs.find(x=>x.id==sid).due=v;save()}
+function delSub(gid,sid){const g=S.goals.find(g=>g.id==gid);const kill=new Set([sid]);g.subs.forEach(x=>{if(kill.has(x.parent))kill.add(x.id)});g.subs=g.subs.filter(x=>!kill.has(x.id));S.tasks.forEach(t=>{if(kill.has(t.sub))t.sub=''});save()}
+function addGoal(){const t=gt.value.trim();if(!t)return;S.goals.push({id:id(),title:t,due:gd.value,why:'',krs:[]});save()}
+function delGoal(i){S.goals=S.goals.filter(g=>g.id!=i);S.tasks.forEach(t=>{if(t.goal==i){t.goal='';t.sub=''}});save()}
+function setG(i,k,v){S.goals.find(g=>g.id==i)[k]=v;save()}
+function addKr(i){const t=document.getElementById('kr'+i).value.trim(),n=+document.getElementById('kt'+i).value||1;if(!t)return;S.goals.find(g=>g.id==i).krs.push({t,target:n,cur:0});save()}
+function setKr(i,k,v){S.goals.find(g=>g.id==i).krs[k].cur=+v;save()}
+function delKr(i,k){S.goals.find(g=>g.id==i).krs.splice(k,1);save()}
+function mv(k){let[y,m]=HM.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}HM=y+'-'+String(m).padStart(2,'0');render()}
+function addHabit(){const t=ht.value.trim();if(!t)return;S.habits.push({id:id(),title:t,log:[]});save()}
+function delHabit(i){S.habits=S.habits.filter(h=>h.id!=i);save()}
+function habit(i,d){const h=S.habits.find(h=>h.id==i);h.log=h.log.includes(d)?h.log.filter(x=>x!=d):[...h.log,d];save()}
+function streak(h){let n=0,d=new Date();if(!h.log.includes(today()))d.setDate(d.getDate()-1);while(h.log.includes(ymd(d))){n++;d.setDate(d.getDate()-1)}return n}
+function addReview(){const t=rv.value.trim();if(!t)return;const w=new Date();w.setDate(w.getDate()-7);S.reviews.push({date:today(),text:t,n:S.tasks.filter(x=>x.doneAt&&x.doneAt>=ymd(w)).length});save()}
+function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='dreamcatcher-'+today()+'.json';a.click()}
+function importData(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(r.result);save()}catch(e){alert('読み込めませんでした')}};r.readAsText(el.files[0])}
+function tog(k){OPEN.has(k)?OPEN.delete(k):OPEN.add(k);render()}
+OPEN.add('root');
+function render(){
+  nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
+  app.innerHTML=V[tab]();
+}
+render();
+</script>
+</body>
+</html>
