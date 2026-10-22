@@ -435,7 +435,7 @@ const FB_CONFIG={
 const DEVICE=(()=>{try{let d=localStorage.getItem('dc-device');if(!d){d=Math.random().toString(36).slice(2);localStorage.setItem('dc-device',d)}return d}catch(e){return 'x'}})();
 let fbUser=null,fbDoc=null,pushT=null,syncState='';
 function acctUI(){const el=document.getElementById('acct');if(!el)return;
-  if(!FB_CONFIG.apiKey){el.innerHTML='';return}
+  if(SAMPLE||!FB_CONFIG.apiKey){el.innerHTML='';return}
   el.innerHTML=fbUser?`<span class="muted" style="font-size:12px">${syncState}</span>${fbUser.photoURL?`<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%" referrerpolicy="no-referrer">`:''}<button class="ghost" onclick="logout()">ログアウト</button>`
     :`<button class="btn" style="padding:5px 12px;font-size:13px" onclick="login()">ログインして同期</button>`}
 function pushSoon(){if(!fbDoc)return;clearTimeout(pushT);syncState='保存中…';acctUI();pushT=setTimeout(()=>{
