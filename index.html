@@ -242,7 +242,7 @@ inbox(){
   <h2>最近完了</h2><div class="card">${done.map(taskRow).join('')||'<p class="muted">—</p>'}</div>`;
 },
 goals(){
-  return `<h2>ビジョン（3〜5年後どうなっていたい？）</h2>
+  return `<h2>ビジョン（将来のなりたい姿）</h2>
   <div class="card"><textarea onchange="S.vision=this.value;save()" placeholder="例：自分の事業で家族と自由な時間を持てている">${esc(S.vision)}</textarea></div>
   <h2>目標（OKR：目標＋測れる成果指標）</h2>
   <div class="card row"><input id="gt" class="grow" placeholder="目標（例：英語で商談できる）"><input id="gd" type="date"><button class="btn" onclick="addGoal()">追加</button></div>
