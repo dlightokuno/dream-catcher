@@ -146,13 +146,14 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .hd.blank{display:none}
 @media(max-width:600px){.hd.blank{display:flex}}
 @media(hover:hover){.qsel{display:none}}
+.sbar{background:#fdf3dc;color:#7a5410;font-size:13px;padding:8px 16px;text-align:center}.sbar a{color:inherit;font-weight:700;margin-left:8px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><span id="acct" style="margin-left:auto;display:flex;gap:6px;align-items:center"></span><button class="ghost" onclick="loadSample()">サンプルを入れる</button></header>
+<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><span id="acct" style="margin-left:auto;display:flex;gap:6px;align-items:center"></span><a class="ghost" id="sbtn" href="?sample=1" target="_blank" rel="noopener" style="text-decoration:none">サンプルを見る ↗</a></header>
 <main id="app"></main>
 <script>
 const KEY='northstar-v1';
@@ -160,7 +161,8 @@ const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const today=()=>ymd(new Date());
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 S=S||{vision:'',goals:[],tasks:[],habits:[],reviews:[]};
-const save=()=>{S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
+const SAMPLE=new URLSearchParams(location.search).has('sample');
+const save=()=>{if(SAMPLE){render();return}S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
 const id=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TABS={map:'目標マインドマップ',goals:'目標',today:'今日',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
@@ -374,7 +376,6 @@ function dropTo(e,u,i){e.preventDefault();const t=S.tasks.find(t=>t.id==e.dataTr
 function setPri(i,n){const t=S.tasks.find(t=>t.id==i);n=+n;t.important=n<=2;t.urgent=n==1||n==3;save()}
 function setT(i,k,v){S.tasks.find(t=>t.id==i)[k]=v;save()}
 function loadSample(){
-  if(S.tasks.length&&!ok(event.target,'もう一度押すと置き換え'))return;
   const d=n=>{const x=new Date();x.setDate(x.getDate()+n);return ymd(x)};
   const T=(title,goal,due,u,i,o={})=>({id:id(),title,goal,due:due===null?'':d(due),done:false,mit:'',urgent:u,important:i,...o});
   S={vision:'好きな仕事で、家族と自由な時間を持てている',reviews:[],
@@ -439,29 +440,34 @@ function acctUI(){const el=document.getElementById('acct');if(!el)return;
     :`<button class="btn" style="padding:5px 12px;font-size:13px" onclick="login()">ログインして同期</button>`}
 function pushSoon(){if(!fbDoc)return;clearTimeout(pushT);syncState='保存中…';acctUI();pushT=setTimeout(()=>{
   fbDoc.set({data:JSON.stringify(S),updatedAt:S.updatedAt||Date.now(),device:DEVICE}).then(()=>{syncState='☁ 同期済み';acctUI()}).catch(e=>{syncState='⚠ 同期エラー';acctUI();console.error(e)})},800)}
-function login(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{
-  if(e.code=='auth/popup-blocked'||e.code=='auth/operation-not-supported-in-this-environment')firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());else alert('ログインできませんでした：'+e.message)})}
-function logout(){firebase.auth().signOut()}
+function gp(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});return p}
+function login(){firebase.auth().signInWithPopup(gp()).catch(e=>{
+  if(e.code=='auth/popup-blocked'||e.code=='auth/operation-not-supported-in-this-environment')firebase.auth().signInWithRedirect(gp());else alert('ログインできませんでした：'+e.message)})}
+const EMPTY=()=>({vision:'',goals:[],tasks:[],habits:[],reviews:[]});
+function logout(){if(fbDoc&&fbDoc._unsub)fbDoc._unsub();fbDoc=null;firebase.auth().signOut().then(()=>{S=EMPTY();try{localStorage.removeItem(KEY)}catch(e){}render();acctUI()})}
 function hasData(x){return x&&((x.tasks||[]).length||(x.goals||[]).length||(x.habits||[]).length)}
-function initSync(){if(!FB_CONFIG.apiKey||!window.firebase)return;
+function initSync(){if(SAMPLE||!FB_CONFIG.apiKey||!window.firebase)return;
   firebase.initializeApp(FB_CONFIG);
   firebase.auth().onAuthStateChanged(async u=>{fbUser=u;if(fbDoc&&fbDoc._unsub)fbDoc._unsub();fbDoc=null;
     if(!u){syncState='';acctUI();return}
     syncState='読み込み中…';acctUI();
     const ref=firebase.firestore().collection('users').doc(u.uid);
     try{const snap=await ref.get();fbDoc=ref;
+      if(S.owner&&S.owner!==u.uid){S=EMPTY()}
+      S.owner=u.uid;
       if(snap.exists){const r=snap.data(),remote=JSON.parse(r.data);
-        if(!hasData(S)||(r.updatedAt||0)>(S.updatedAt||0)){S=remote;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()}
+        if(!hasData(S)||(r.updatedAt||0)>(S.updatedAt||0)){remote.owner=u.uid;S=remote;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()}
         else pushSoon()}
       else pushSoon();
       syncState='☁ 同期済み';acctUI();
       ref._unsub=ref.onSnapshot(sn=>{if(!sn.exists)return;const r=sn.data();
         if(r.device!==DEVICE&&(r.updatedAt||0)>(S.updatedAt||0)){const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)&&a.value)return;
-          S=JSON.parse(r.data);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();syncState='☁ 他の端末から更新';acctUI()}});
+          S=JSON.parse(r.data);S.owner=u.uid;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();syncState='☁ 他の端末から更新';acctUI()}});
       fbDoc._unsub=ref._unsub;
     }catch(e){syncState='⚠ 同期エラー';acctUI();console.error(e)}});
 }
 
+if(SAMPLE){loadSample();document.title='サンプル - Dream Catcher';document.body.insertAdjacentHTML('afterbegin','<div class="sbar">👀 サンプル表示中：自由に触って試せます。ここでの操作は保存されず、あなたのデータにも影響しません。<a href="./">自分のページに戻る</a></div>');document.getElementById('sbtn').remove()}
 render();acctUI();initSync();
 </script>
 </body>
