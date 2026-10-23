@@ -251,6 +251,7 @@ S=S||{vision:'',goals:[],tasks:[],habits:[],reviews:[]};
 const SAMPLE=new URLSearchParams(location.search).has('sample');
 const save=()=>{if(SAMPLE){render();return}S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
 const id=()=>Math.random().toString(36).slice(2,9);
+const newId=()=>id();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TABS={map:'目標マインドマップ',goals:'目標',today:'今日',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー',other:'その他'};
 let tab='map';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
@@ -386,7 +387,7 @@ goals(){
 },
 matrix(){
   const q=(u,i)=>S.tasks.filter(t=>!t.done&&!!t.urgent==u&&!!t.important==i);
-  const box=(u,i,title,hint)=>`<div class="card drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTo(event,${u},${i})"><h3>${title}</h3><div class="muted">${hint}</div><input style="width:100%;margin:6px 0" placeholder="＋ ここに追加して Enter" onkeydown="if(ent(event)&&this.value.trim()){S.tasks.push({id:id(),title:this.value.trim(),goal:'',due:'',done:false,mit:'',urgent:!!${u},important:!!${i}});save()}">${q(u,i).map(t=>`<div class="task drag" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${t.id}');this.classList.add('dragging')" ondragend="this.classList.remove('dragging')"><span class="t">⋮⋮ ${t.cat&&CATS[t.cat]?`<span class="cdot" ${catStyle(t)}></span>`:''}${esc(t.title)}</span><select class="qsel" title="象限を変更" onchange="setPri('${t.id}',this.value)">${['','第１','第２','第３','第４'].map((l,n)=>n?`<option value="${n}" ${(u&&i?1:i?2:u?3:4)==n?'selected':''}>${l}</option>`:'').join('')}</select>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}</div>`).join('')}</div>`;
+  const box=(u,i,title,hint)=>`<div class="card drop" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropTo(event,${u},${i})"><h3>${title}</h3><div class="muted">${hint}</div><input style="width:100%;margin:6px 0" placeholder="＋ ここに追加して Enter" onkeydown="if(ent(event)&&this.value.trim()){S.tasks.push({id:newId(),title:this.value.trim(),goal:'',due:'',done:false,mit:'',urgent:!!${u},important:!!${i}});save()}">${q(u,i).map(t=>`<div class="task drag" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${t.id}');this.classList.add('dragging')" ondragend="this.classList.remove('dragging')"><span class="t">⋮⋮ ${t.cat&&CATS[t.cat]?`<span class="cdot" ${catStyle(t)}></span>`:''}${esc(t.title)}</span><select class="qsel" title="象限を変更" onchange="setPri('${t.id}',this.value)">${['','第１','第２','第３','第４'].map((l,n)=>n?`<option value="${n}" ${(u&&i?1:i?2:u?3:4)==n?'selected':''}>${l}</option>`:'').join('')}</select>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}</div>`).join('')}</div>`;
   return `<h2>アイゼンハワー・マトリクス（タスクをドラッグして移動）</h2><div class="grid4">
   ${box(1,1,'① 今すぐやる','緊急×重要')}${box(0,1,'② 予定に入れる','重要だが緊急でない ← 目標達成はここ')}
   ${box(1,0,'③ 任せる・減らす','緊急だが重要でない')}${box(0,0,'④ やめる','どちらでもない')}</div>`;
@@ -587,7 +588,7 @@ partner(o){return `<p class="muted">人生で大切な人（パートナー・�
    <h3>貢献リスト（行動計画）</h3>
    ${(p.acts||[]).map((a,ai)=>`<div class="row act ${a.done?'done':''}"><input type="checkbox" ${a.done?'checked':''} onchange="oset('partners.${pi}.acts.${ai}.done',this.checked,true)">${ti(`partners.${pi}.acts.${ai}.t`,a.t,'行動計画','grow')}<input type="date" value="${a.date||''}" onchange="oset('partners.${pi}.acts.${ai}.date',this.value)"><button class="x" onclick="O().partners[${pi}].acts.splice(${ai},1);save()">×</button></div>`).join('')}
    <button class="ghost" onclick="const p=O().partners[${pi}];(p.acts=p.acts||[]).push({t:'',date:'',done:false});save()">＋ 行動を追加</button></div>`).join('')}
-  <button class="btn" onclick="O().partners.push({id:id(),name:'',rel:'',profile:'',need:{},can:{},acts:[]});save()">＋ パワーパートナーを追加</button>`},
+  <button class="btn" onclick="O().partners.push({id:newId(),name:'',rel:'',profile:'',need:{},can:{},acts:[]});save()">＋ パワーパートナーを追加</button>`},
 people(o){return `<div class="card"><p class="muted" style="margin:0 0 6px">分野ごとに関わりの深い人を書き出し、関係の深さ（1〜5）を選びましょう。</p>
    <div class="dleg">${DEPTH.slice(1).map((d,i)=>`<span><b>${i+1}</b> ${d}</span>`).join('')}</div></div>
   <div class="g2">${PCATS.map(c=>{const L=o.people[c]||[];return `<div class="card"><h3>◆ ${c} <span class="muted">${L.length}人</span></h3>
