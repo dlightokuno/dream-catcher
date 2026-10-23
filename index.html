@@ -174,6 +174,9 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 @media(max-width:860px){.tgrid{grid-template-columns:1fr}.tlcol{position:static}.tl{height:60vh}}
 .tpb{padding:4px 8px}
 .tpp{background:var(--acc2);border:1.5px solid var(--acc);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.blk.short{flex-direction:row;align-items:center;gap:6px;padding-top:0;padding-bottom:0;font-size:11.5px}
+.blk.short b{flex:0 1 auto;min-width:0}.blk.short small{flex:none;font-size:10.5px}
+.blk.short .bx{top:50%;transform:translateY(-50%)}.blk.short .rz{height:5px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -459,14 +462,14 @@ function render(){
     if(GTOK&&!GLOADED){GLOADED=true;gcalLoad()}}
 }
 // ===== 今日のタイムライン（ドラッグで時間割り当て） =====
-const TL0=5*60,TL1=24*60,PPM=1.1,SNAP=15;let GEV=[],GALL=[],DR=null;
+const TL0=5*60,TL1=24*60,PPM=1.4,SNAP=15;let GEV=[],GALL=[],DR=null;
 const fm=m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
 function slotOn(t){return t.slot&&t.slot.date==today()}
 function timeline(){
   const ts=S.tasks.filter(slotOn),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   const hrs=[];for(let h=TL0/60;h<TL1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-TL0)*PPM}px"><span>${h}:00</span></div>`);
-  const ev=GEV.map(e=>`<div class="blk gev" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(18,(e.e-e.s)*PPM)}px" title="Googleカレンダー"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
-  const bl=ts.map(t=>`<div class="blk ${t.done?'done':''}" data-id="${t.id}" style="top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(18,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
+  const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(18,(e.e-e.s)*PPM)}px" title="Googleカレンダー"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
+  const bl=ts.map(t=>`<div class="blk ${t.done?'done':''} ${t.slot.end-t.slot.start<=30?'short':''}" data-id="${t.id}" style="top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(20,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
      <b>${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
@@ -501,7 +504,7 @@ function dmove(e){if(!DR)return;
   if(DR.mode=='new'){mvGhost(e);document.getElementById('tl')?.classList.toggle('over',overTL(e));if(overTL(e))autoScroll(e);return}
   autoScroll(e);const d=Math.round((e.clientY-DR.y0)/PPM/SNAP)*SNAP,o=DR.orig;let s0=o.start,e0=o.end;
   if(DR.mode=='move'){const len=e0-s0;s0=Math.min(TL1-len,Math.max(TL0,s0+d));e0=s0+len}else e0=Math.min(TL1,Math.max(s0+SNAP,e0+d));
-  DR.cur={...o,start:s0,end:e0};DR.el.style.top=(s0-TL0)*PPM+'px';DR.el.style.height=Math.max(18,(e0-s0)*PPM)+'px';DR.el.querySelector('.bt').textContent=fm(s0)+'–'+fm(e0)}
+  DR.cur={...o,start:s0,end:e0};DR.el.style.top=(s0-TL0)*PPM+'px';DR.el.style.height=Math.max(20,(e0-s0)*PPM)+'px';DR.el.classList.toggle('short',e0-s0<=30);DR.el.querySelector('.bt').textContent=fm(s0)+'–'+fm(e0)}
 function dend(e){window.removeEventListener('pointermove',dmove);const D=DR;DR=null;if(!D)return;const t=S.tasks.find(t=>t.id==D.id);
   if(D.mode=='new'){D.ghost.remove();document.getElementById('tl')?.classList.remove('over');
     if(overTL(e)){let m=Math.min(TL1-60,Math.max(TL0,minAt(e.clientY)));t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save();gcalPut(t)}return}
