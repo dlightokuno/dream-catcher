@@ -177,9 +177,6 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .blk.short{flex-direction:row;align-items:center;gap:6px;padding-top:0;padding-bottom:0;font-size:11.5px}
 .blk.short b{flex:0 1 auto;min-width:0}.blk.short small{flex:none;font-size:10.5px}
 .blk.short .bx{top:50%;transform:translateY(-50%)}.blk.short .rz{height:5px}
-.nb{padding:4px 8px}.nb.has{border-color:var(--acc);background:var(--acc2)}
-.notev{flex-basis:100%;font-size:13px;color:var(--sub);background:var(--bg);border-left:3px solid var(--acc);padding:6px 10px;border-radius:4px;cursor:text;white-space:normal;word-break:break-all}
-.notee{flex-basis:100%;display:flex;flex-direction:column;gap:6px;align-items:flex-end}.notee textarea{min-height:80px}
 .task.hascat{border-left:4px solid var(--cat);padding-left:8px}
 .nd.hascat{border-left:5px solid var(--cat)}
 .cb{font:inherit;font-size:12px;padding:3px 8px;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:99px;cursor:pointer;white-space:nowrap}
@@ -222,10 +219,10 @@ function todayRow(t){
    <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
    <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
    <button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button>
-   ${catBtn(t)}${noteBtn(t)}
-   <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button>${notePanel(t)}</div>`}
+   ${catBtn(t)}
+   <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
-let EDIT='',NOTE='';
+let EDIT='';
 const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8']};
 const QN=['','I','II','III','IV'];
 function qOf(t){return t.important&&t.urgent?1:t.important?2:t.urgent?3:4}
@@ -234,10 +231,6 @@ function catStyle(t){return t.cat&&CATS[t.cat]?`style="--cat:${CATS[t.cat][1]}"`
 function catBtn(t){const c=CATS[t.cat];return `<button class="cb ${c?'on':''}" ${catStyle(t)} title="色分け（押すたびに切替）" onclick="cycCat('${t.id}')">${c?'● '+c[0]:'○ 色'}</button>`}
 function catOpts(){return `<option value="">色なし</option>`+Object.entries(CATS).map(([k,[l]])=>`<option value="${k}">● ${l}</option>`).join('')}
 function cycCat(i){const t=S.tasks.find(t=>t.id==i),ks=['',...Object.keys(CATS)];t.cat=ks[(ks.indexOf(t.cat||'')+1)%ks.length];save()}
-function noteBtn(t){return `<button class="sb nb ${t.note?'has':''}" title="メモ" onclick="NOTE=NOTE=='${t.id}'?'':'${t.id}';render();setTimeout(()=>document.getElementById('nt-${t.id}')?.focus(),30)">📝${t.note?'':''}</button>`}
-function notePanel(t){const open=NOTE==t.id;if(!open&&!t.note)return '';
-  if(!open)return `<div class="notev" onclick="NOTE='${t.id}';render()">${esc(t.note).replace(/\n/g,'<br>')}</div>`;
-  return `<div class="notee"><textarea id="nt-${t.id}" placeholder="メモ（URL・手順・気づきなど）" onchange="setT('${t.id}','note',this.value)">${esc(t.note||'')}</textarea><button class="ghost" onclick="const v=document.getElementById('nt-${t.id}').value;NOTE='';setT('${t.id}','note',v)">閉じる</button></div>`}
 function ed(kind,path,val,ph){const k=kind+':'+path;
   if(EDIT==k)return `<input class="ed" value="${esc(val)}" placeholder="${ph||''}" onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(ent(event))setVal('${kind}','${path}',this.value);if(event.key=='Escape'){EDIT='';render()}" onblur="setVal('${kind}','${path}',this.value)">`;
   return `${val?esc(val):`<span class="muted">${ph||''}</span>`}<span class="pen" title="編集" onclick="event.stopPropagation();EDIT='${k}';render();setTimeout(()=>{const e=document.querySelector('.ed');if(e){e.focus();e.select()}})">✎</span>`}
@@ -260,8 +253,8 @@ function taskRow(t){
    ${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}
    ${t.done?(t.repeat?`<span class="muted">${repLabel(t)}</span>`:''):`<button class="rp ${t.repeat?'on':''}" title="繰り返し設定" onclick="RPO=RPO=='${t.id}'?'':'${t.id}';render()">${t.repeat?repLabel(t):'🔁 繰り返し'}</button>`}
    <button class="ghost" onclick="mit('${t.id}')">${t.mit===today()?'★':'☆'}</button>
-   ${catBtn(t)}${noteBtn(t)}
-   <button class="x" onclick="if(ok(this))delTask('${t.id}')">×</button>${RPO==t.id&&!t.done?repPanel(t):''}${notePanel(t)}</div>`;
+   ${catBtn(t)}
+   <button class="x" onclick="if(ok(this))delTask('${t.id}')">×</button>${RPO==t.id&&!t.done?repPanel(t):''}</div>`;
 }
 function goalOpts(sel){return `<option value="">目標なし</option>`+S.goals.map(g=>`<option value="${g.id}" ${g.id==sel?'selected':''}>${esc(g.title)}</option>`+(g.subs||[]).map(sb=>`<option value="${g.id}|${sb.id}">　└ ${esc(sb.title)}</option>`).join('')).join('')}
 
