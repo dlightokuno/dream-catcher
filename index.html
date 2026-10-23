@@ -412,7 +412,7 @@ function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.do
   else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
   save()}
 function mit(i){const t=S.tasks.find(t=>t.id==i);t.mit=t.mit===today()?'':today();save()}
-function delTask(i){const t=S.tasks.find(t=>t.id==i);if(t&&t.gcalId)gcalDel(t.gcalId);S.tasks=S.tasks.filter(t=>t.id!=i);save()}
+function delTask(i){const t=S.tasks.find(t=>t.id==i);S.tasks=S.tasks.filter(t=>t.id!=i);save()}
 function dropTo(e,u,i){e.preventDefault();const t=S.tasks.find(t=>t.id==e.dataTransfer.getData('text/plain'));if(t){t.urgent=!!u;t.important=!!i;save()}}
 function setPri(i,n){const t=S.tasks.find(t=>t.id==i);n=+n;t.important=n<=2;t.urgent=n==1||n==3;save()}
 function setT(i,k,v){S.tasks.find(t=>t.id==i)[k]=v;save()}
@@ -461,33 +461,29 @@ function exportData(){const a=document.createElement('a');a.href=URL.createObjec
 function importData(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(r.result);save()}catch(e){alert('読み込めませんでした')}};r.readAsText(el.files[0])}
 function tog(k){OPEN.has(k)?OPEN.delete(k):OPEN.add(k);render()}
 OPEN.add('root');
-let GLOADED=false;
 function render(){
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   app.innerHTML=V[tab]();
   const tl=document.getElementById('tl');
-  if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}
-    if(GTOK&&!GLOADED){GLOADED=true;gcalLoad()}}
+  if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 }
 // ===== 今日のタイムライン（ドラッグで時間割り当て） =====
-const TL0=5*60,TL1=24*60,PPM=1.4,SNAP=15;let GEV=[],GALL=[],DR=null;
+const TL0=5*60,TL1=24*60,PPM=1.4,SNAP=15;let DR=null;
 const fm=m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
 function slotOn(t){return t.slot&&t.slot.date==today()}
 function timeline(){
   const ts=S.tasks.filter(slotOn),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   const hrs=[];for(let h=TL0/60;h<TL1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-TL0)*PPM}px"><span>${h}:00</span></div>`);
-  const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(18,(e.e-e.s)*PPM)}px" title="Googleカレンダー"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
   const bl=ts.map(t=>`<div class="blk ${t.done?'done':''} ${t.slot.end-t.slot.start<=30?'short':''}" data-id="${t.id}" style="top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(20,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
      <b>${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
-  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${gcalUI()}</div>
+  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2></div>
    <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
    ${tpPanel()}
-   ${GALL.length?`<div class="allday">${GALL.map(x=>`<span>📅 ${esc(x)}</span>`).join('')}</div>`:''}
    <div class="tl" id="tl"><div class="tlg" id="tlg" style="height:${(TL1-TL0)*PPM}px">${hrs.join('')}
-   ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${ev}${bl}</div></div>`}
+   ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${bl}</div></div>`}
 
 let TP='';
 function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'nearest',behavior:'smooth'}),30)}
@@ -499,8 +495,8 @@ function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
   return `<div class="tpp" id="tpp"><div><b>${esc(t.title)}</b> の時間</div>
    <div class="row">開始 <select id="tps">${opts.join('')}</select> 長さ <select id="tpl">${lens.map(l=>`<option value="${l}" ${l==len?'selected':''}>${l<60?l+'分':l%60?Math.floor(l/60)+'時間'+l%60+'分':l/60+'時間'}</option>`).join('')}</select></div>
    <div class="row"><button class="btn" onclick="setTP()">決定</button>${slotOn(t)?`<button class="ghost" onclick="TP='';unslot('${t.id}')">カレンダーから外す</button>`:''}<button class="ghost" onclick="TP='';render()">キャンセル</button></div></div>`}
-function setTP(){const t=S.tasks.find(x=>x.id==TP);const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();TP='';save();gcalPut(t)}
-function unslot(i){const t=S.tasks.find(t=>t.id==i);const g=t.gcalId;t.slot=null;t.gcalId='';if(g)gcalDel(g);save()}
+function setTP(){const t=S.tasks.find(x=>x.id==TP);const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();TP='';save()}
+function unslot(i){const t=S.tasks.find(t=>t.id==i);t.slot=null;save()}
 function dstart(e,id,mode){if(e.button>0)return;e.preventDefault();const t=S.tasks.find(t=>t.id==id);
   DR={id,mode,y0:e.clientY,orig:t.slot?{...t.slot}:null,el:mode=='new'?null:document.querySelector(`.blk[data-id="${id}"]`),cur:null};
   if(mode=='new'){const g=document.createElement('div');g.className='ghost-drag';g.textContent=t.title;document.body.appendChild(g);DR.ghost=g;mvGhost(e)}
@@ -516,38 +512,10 @@ function dmove(e){if(!DR)return;
   DR.cur={...o,start:s0,end:e0};DR.el.style.top=(s0-TL0)*PPM+'px';DR.el.style.height=Math.max(20,(e0-s0)*PPM)+'px';DR.el.classList.toggle('short',e0-s0<=30);DR.el.querySelector('.bt').textContent=fm(s0)+'–'+fm(e0)}
 function dend(e){window.removeEventListener('pointermove',dmove);const D=DR;DR=null;if(!D)return;const t=S.tasks.find(t=>t.id==D.id);
   if(D.mode=='new'){D.ghost.remove();document.getElementById('tl')?.classList.remove('over');
-    if(overTL(e)){let m=Math.min(TL1-60,Math.max(TL0,minAt(e.clientY)));t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save();gcalPut(t)}return}
-  if(D.cur&&(D.cur.start!=D.orig.start||D.cur.end!=D.orig.end)){t.slot=D.cur;save();gcalPut(t)}
+    if(overTL(e)){let m=Math.min(TL1-60,Math.max(TL0,minAt(e.clientY)));t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save()}return}
+  if(D.cur&&(D.cur.start!=D.orig.start||D.cur.end!=D.orig.end)){t.slot=D.cur;save()}
   else if(D.mode=='move'&&Math.abs(e.clientY-D.y0)<4)openTP(D.id)}
 
-// ===== Googleカレンダー連携（任意） =====
-const GSCOPE='https://www.googleapis.com/auth/calendar.events';
-let GTOK=(()=>{try{const x=JSON.parse(sessionStorage.getItem('dc-gtok'));return x&&x.exp>Date.now()?x.tok:null}catch(e){return null}})(),gmsg='';
-function gcalUI(){if(SAMPLE)return '';
-  if(!fbUser)return `<span class="muted" style="font-size:12px">ログインするとGoogleカレンダーと連携できます</span>`;
-  if(GTOK)return `<span class="gc on">📅 Googleカレンダー連携中${gmsg?' ・ '+gmsg:''}</span><button class="ghost" onclick="gcalLoad()">↻</button><button class="ghost" onclick="gcalOff()">解除</button>`;
-  return `<button class="ghost" onclick="gcalConnect()">📅 ${S.gcal?'Googleカレンダーに再接続':'Googleカレンダーと連携'}</button>`}
-function gcalConnect(){const p=gp();p.addScope(GSCOPE);p.setCustomParameters({prompt:'consent',login_hint:fbUser.email||''});
-  fbUser.reauthenticateWithPopup(p).then(r=>{GTOK=r.credential.accessToken;try{sessionStorage.setItem('dc-gtok',JSON.stringify({tok:GTOK,exp:Date.now()+50*60e3}))}catch(e){}
-    S.gcal=true;save();gcalLoad();S.tasks.filter(slotOn).forEach(gcalPut)})
-  .catch(e=>alert(e.code=='auth/user-mismatch'?'ログイン中と同じGoogleアカウントを選んでください':'連携できませんでした：'+e.message))}
-function gcalOff(){GTOK=null;try{sessionStorage.removeItem('dc-gtok')}catch(e){}S.gcal=false;GEV=[];GALL=[];save()}
-async function gapi(method,path,body){if(!GTOK)return null;
-  const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary'+path,{method,headers:{Authorization:'Bearer '+GTOK,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
-  if(r.status==401||r.status==403){GTOK=null;try{sessionStorage.removeItem('dc-gtok')}catch(e){}render();return null}
-  return r.status==204?{}:r.json()}
-async function gcalLoad(){if(!GTOK)return;const d=new Date();d.setHours(0,0,0,0);const e=new Date(d);e.setDate(e.getDate()+1);
-  const j=await gapi('GET',`/events?singleEvents=true&orderBy=startTime&maxResults=100&timeMin=${encodeURIComponent(d.toISOString())}&timeMax=${encodeURIComponent(e.toISOString())}`);if(!j)return;
-  const mins=x=>{const t=new Date(x);return t<d?0:t>=e?1440:t.getHours()*60+t.getMinutes()};
-  const items=(j.items||[]).filter(x=>!(x.extendedProperties&&x.extendedProperties.private&&x.extendedProperties.private.dc));
-  GEV=items.filter(x=>x.start&&x.start.dateTime).map(x=>({t:x.summary||'(予定)',s:Math.max(TL0,mins(x.start.dateTime)),e:Math.min(TL1,mins(x.end.dateTime))})).filter(x=>x.e>x.s);
-  GALL=items.filter(x=>x.start&&x.start.date).map(x=>x.summary||'(終日)');gmsg='';render()}
-function iso(date,m){const [y,mo,dd]=date.split('-').map(Number);return new Date(y,mo-1,dd,Math.floor(m/60),m%60).toISOString()}
-async function gcalPut(t){if(!GTOK||!S.gcal||!t.slot)return;
-  const body={summary:t.title,description:t.note||'',start:{dateTime:iso(t.slot.date,t.slot.start)},end:{dateTime:iso(t.slot.date,t.slot.end)},extendedProperties:{private:{dc:'1',tid:t.id}}};
-  const j=t.gcalId?await gapi('PATCH','/events/'+t.gcalId,body):await gapi('POST','/events',body);
-  if(j&&j.id&&j.id!==t.gcalId){t.gcalId=j.id;save()}gmsg='保存済み';}
-function gcalDel(id){gapi('DELETE','/events/'+id)}
 
 // ===== クラウド同期（Firebase：Googleログイン＋Firestore） =====
 // Firebaseコンソール → プロジェクトの設定 → マイアプリ(ウェブ) の firebaseConfig をここに貼る
