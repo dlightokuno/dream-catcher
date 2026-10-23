@@ -172,6 +172,8 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .gc{font-size:12px;color:var(--acc);font-weight:600}
 .allday{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;font-size:12px}.allday span{background:var(--acc2);padding:2px 8px;border-radius:6px}
 @media(max-width:860px){.tgrid{grid-template-columns:1fr}.tlcol{position:static}.tl{height:60vh}}
+.tpb{padding:4px 8px}
+.tpp{background:var(--acc2);border:1.5px solid var(--acc);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -205,6 +207,7 @@ function todayRow(t){
    <span class="t">${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${repLabel(t)}</span>`:''}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
    <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
    <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
+   <button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button>
    <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
 let EDIT='';
@@ -281,7 +284,7 @@ today(){
   <h2>＋ 今日のタスクを新しく追加</h2>
   <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
   <h2>＋ タスク管理から選ぶ <span class="muted">${pool.length}件 ・ 期限が近い順</span></h2>
-  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool"><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
+  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool"><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
   <h2>期限が今日・過ぎたもの</h2><div class="card">${due.length?due.map(taskRow).join(''):'<p class="muted">なし 🎉</p>'}</div>
   <h2>今日の習慣</h2><div class="card">${S.habits.length?S.habits.map(h=>`<div class="task ${h.log.includes(today())?'done':''}"><input type="checkbox" ${h.log.includes(today())?'checked':''} onchange="habit('${h.id}','${today()}')"><span class="t">${esc(h.title)}</span><span class="muted">🔥${streak(h)}日</span></div>`).join(''):'<p class="muted">習慣タブで追加</p>'}</div></div>
   <div class="tlcol">${timeline()}</div></div>`;
@@ -468,10 +471,23 @@ function timeline(){
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
   return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${gcalUI()}</div>
-   <p class="muted" style="margin:4px 0 8px">左のタスクの ⠿ をつかんでここへドラッグ。ブロックはドラッグで移動、下の端で長さを変更。</p>
+   <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
+   ${tpPanel()}
    ${GALL.length?`<div class="allday">${GALL.map(x=>`<span>📅 ${esc(x)}</span>`).join('')}</div>`:''}
    <div class="tl" id="tl"><div class="tlg" id="tlg" style="height:${(TL1-TL0)*PPM}px">${hrs.join('')}
    ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${ev}${bl}</div></div>`}
+
+let TP='';
+function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'nearest',behavior:'smooth'}),30)}
+function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
+  const n=new Date(),nowm=Math.ceil((n.getHours()*60+n.getMinutes())/15)*15;
+  const st=slotOn(t)?t.slot.start:Math.min(TL1-60,Math.max(TL0,nowm)),len=slotOn(t)?t.slot.end-t.slot.start:60;
+  const opts=[];for(let m=TL0;m<TL1;m+=15)opts.push(`<option value="${m}" ${m==st?'selected':''}>${fm(m)}</option>`);
+  const lens=[15,30,45,60,90,120,150,180,240];if(!lens.includes(len))lens.push(len);lens.sort((a,b)=>a-b);
+  return `<div class="tpp" id="tpp"><div><b>${esc(t.title)}</b> の時間</div>
+   <div class="row">開始 <select id="tps">${opts.join('')}</select> 長さ <select id="tpl">${lens.map(l=>`<option value="${l}" ${l==len?'selected':''}>${l<60?l+'分':l%60?Math.floor(l/60)+'時間'+l%60+'分':l/60+'時間'}</option>`).join('')}</select></div>
+   <div class="row"><button class="btn" onclick="setTP()">決定</button>${slotOn(t)?`<button class="ghost" onclick="TP='';unslot('${t.id}')">カレンダーから外す</button>`:''}<button class="ghost" onclick="TP='';render()">キャンセル</button></div></div>`}
+function setTP(){const t=S.tasks.find(x=>x.id==TP);const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();TP='';save();gcalPut(t)}
 function unslot(i){const t=S.tasks.find(t=>t.id==i);const g=t.gcalId;t.slot=null;t.gcalId='';if(g)gcalDel(g);save()}
 function dstart(e,id,mode){if(e.button>0)return;e.preventDefault();const t=S.tasks.find(t=>t.id==id);
   DR={id,mode,y0:e.clientY,orig:t.slot?{...t.slot}:null,el:mode=='new'?null:document.querySelector(`.blk[data-id="${id}"]`),cur:null};
@@ -489,7 +505,8 @@ function dmove(e){if(!DR)return;
 function dend(e){window.removeEventListener('pointermove',dmove);const D=DR;DR=null;if(!D)return;const t=S.tasks.find(t=>t.id==D.id);
   if(D.mode=='new'){D.ghost.remove();document.getElementById('tl')?.classList.remove('over');
     if(overTL(e)){let m=Math.min(TL1-60,Math.max(TL0,minAt(e.clientY)));t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save();gcalPut(t)}return}
-  if(D.cur&&(D.cur.start!=D.orig.start||D.cur.end!=D.orig.end)){t.slot=D.cur;save();gcalPut(t)}}
+  if(D.cur&&(D.cur.start!=D.orig.start||D.cur.end!=D.orig.end)){t.slot=D.cur;save();gcalPut(t)}
+  else if(D.mode=='move'&&Math.abs(e.clientY-D.y0)<4)openTP(D.id)}
 
 // ===== Googleカレンダー連携（任意） =====
 const GSCOPE='https://www.googleapis.com/auth/calendar.events';
