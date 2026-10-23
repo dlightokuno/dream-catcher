@@ -472,6 +472,8 @@ function importData(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(
 function tog(k){OPEN.has(k)?OPEN.delete(k):OPEN.add(k);render()}
 OPEN.add('root');
 function render(){
+  // 旧メモ機能のデータを削除（端末・クラウド両方）
+  if((S.tasks||[]).some(t=>'note' in t)){S.tasks.forEach(t=>delete t.note);setTimeout(save)}
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   app.innerHTML=V[tab]();
