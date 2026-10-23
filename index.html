@@ -12,6 +12,14 @@
 <title>Dream Catcher</title>
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1d1b;--sub:#6b6a66;--line:#e4e1d9;--acc:#2f5d50;--acc2:#e8f0ec;--warn:#b5482f}
+html[data-skin=pop]{--bg:#fff8ec;--card:#fff;--ink:#2b2340;--sub:#7a6f8a;--line:#f3e2cc;--acc:#ff4f87;--acc2:#ffe4ee;--warn:#ff7a00}
+html[data-skin=gold]{--bg:#121010;--card:#1d1a17;--ink:#f3e9d2;--sub:#b8a98a;--line:#3a322a;--acc:#d4af37;--acc2:#2c2618;--warn:#e0704f}
+html[data-skin=ocean]{--bg:#eef5fb;--card:#fff;--ink:#13293d;--sub:#5d7184;--line:#d6e4f0;--acc:#1e6fb8;--acc2:#e0edf9;--warn:#d9534f}
+html[data-skin=sakura]{--bg:#fdf4f5;--card:#fff;--ink:#3d2a2e;--sub:#8a6f75;--line:#f0dde1;--acc:#c25b7a;--acc2:#f9e1e8;--warn:#c0392b}
+html[data-skin=night]{--bg:#0f1115;--card:#181b21;--ink:#e8eaed;--sub:#9aa0a6;--line:#2a2e36;--acc:#8ab4f8;--acc2:#1d2633;--warn:#f28b82}
+html[data-skin=gold] h1,html[data-skin=gold] .vision{color:var(--acc)}
+html[data-skin=gold] body{background:radial-gradient(circle at 20% 0,#2a2218,var(--bg) 60%)}
+html[data-skin=pop] body{background:linear-gradient(160deg,#fff8ec,#ffeef5 50%,#eefaff)}
 @media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#211f1d;--ink:#eceae4;--sub:#9a978f;--line:#34322e;--acc:#7fbfa8;--acc2:#24302b;--warn:#e07a5f}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
@@ -185,13 +193,54 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .qb{font-size:11px;font-weight:700;margin-right:4px;color:var(--sub);font-family:Georgia,serif}
 .qb.q1{color:var(--warn)}.qb.q2{color:var(--acc)}
 .blk .qb{color:inherit}
+.gear{white-space:nowrap}
+.modal{position:fixed;inset:0;background:#0006;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px #0004}
+.mbox h3{font-size:14px;margin:16px 0 8px}
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.skin{font:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);cursor:pointer;text-align:left}
+.skin.on{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+.skin .sw{width:100%;height:42px;border-radius:6px;border:1px solid #0001}
+.skin small{color:var(--sub);font-size:11px}
+.otabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+.otabs button{font:inherit;font-size:13px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:99px;padding:6px 14px;cursor:pointer}
+.otabs button.on{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
+.card h3{margin:0 0 6px;font-size:15px}
+.g2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.vb{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.vb figure{margin:0;position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.vb img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.vb figcaption input{width:100%;border:0;border-radius:0;font-size:13px}
+.vbx{position:absolute;top:4px;right:4px;background:#0008!important;color:#fff!important;border-radius:50%;width:28px;height:28px;padding:0!important;font-size:16px!important}
+.vbadd{display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;border:2px dashed var(--acc);border-radius:10px;color:var(--acc);font-weight:700;cursor:pointer;background:var(--acc2)}
+.l100{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 12px}
+@media(min-width:1000px){.l100{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(25,auto);grid-auto-flow:column}.h100{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(25,auto);grid-auto-flow:column}}
+.li,.hi{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);padding:2px 0}
+.li .no,.hi .no{width:3em;text-align:right;font-size:12px;color:var(--sub);flex:none}
+.li input:not([type=checkbox]),.hi input{flex:1;min-width:0;border:0;background:transparent;padding:6px 4px}
+.li.done input:not([type=checkbox]){text-decoration:line-through;color:var(--sub)}
+.h100{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 14px}
+.hi .no{width:4.2em;display:flex;flex-direction:column;line-height:1.1}.hi .no small{font-size:10px;opacity:.7}
+.hi.past{opacity:.75}.hi.cur{background:var(--acc2);border-radius:6px}.hi.cur .no{color:var(--acc);font-weight:700}
+.pk .pname{font-size:17px;font-weight:700;width:100%}
+.ptbl{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:10px 0}
+.ph,.pr{display:grid;grid-template-columns:7.5em 1fr 1fr}
+.ph span{background:var(--acc2);color:var(--acc);font-size:12px;font-weight:700;padding:6px 8px}
+.pr{border-top:1px solid var(--line)}.pr>span{font-size:12px;padding:8px;background:var(--bg);display:flex;align-items:center}
+.pr textarea{border:0;border-left:1px solid var(--line);border-radius:0;min-height:44px;resize:vertical;font-size:13px}
+.act{margin:4px 0}.act.done input.grow{text-decoration:line-through;color:var(--sub)}
+.dleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--sub)}.dleg b{color:var(--acc)}
+.pp{display:flex;gap:6px;align-items:center;margin-bottom:6px}.pp>input{flex:1;min-width:0}
+.dp{display:flex;gap:2px}.dp button{font:inherit;font-size:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;padding:0}
+.dp button.on{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
+@media(max-width:600px){.ph,.pr{grid-template-columns:5.5em 1fr 1fr}.gear{padding:3px 8px;font-size:11px}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><span id="acct" style="margin-left:auto;display:flex;gap:6px;align-items:center"></span><a class="ghost" id="sbtn" href="?sample=1" target="_blank" rel="noopener" style="text-decoration:none">サンプルを見る ↗</a></header>
+<header><h1><svg class="logo" viewBox="0 0 40 52" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="20" cy="18" r="15"/><path stroke-width=".9" d="M20 3 33 11 33 25 20 33 7 25 7 11Z M20 9 28 14 28 22 20 27 12 22 12 14Z M20 3V9M33 11 28 14M33 25 28 22M20 33V27M7 25 12 22M7 11 12 14"/><path d="M8 29 6 39M20 33V43M32 29 34 39"/></g><circle cx="20" cy="18" r="2.2" fill="currentColor"/><g fill="currentColor"><path d="M6 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/><path d="M20 43c-2 2-2 6 0 9 2-3 2-7 0-9Z"/><path d="M34 39c-2 2-2 7 0 10 2-3 2-8 0-10Z"/></g></svg>Dream Catcher</h1><nav id="nav"></nav><span id="acct" style="margin-left:auto;display:flex;gap:6px;align-items:center"></span><button class="ghost gear" title="設定" onclick="openSet()">⚙ 設定</button><a class="ghost" id="sbtn" href="?sample=1" target="_blank" rel="noopener" style="text-decoration:none">サンプルを見る ↗</a></header>
 <main id="app"></main>
 <script>
 const KEY='northstar-v1';
@@ -203,7 +252,7 @@ const SAMPLE=new URLSearchParams(location.search).has('sample');
 const save=()=>{if(SAMPLE){render();return}S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();pushSoon()};
 const id=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const TABS={map:'目標マインドマップ',goals:'目標',today:'今日',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー'};
+const TABS={map:'目標マインドマップ',goals:'目標',today:'今日',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー',other:'その他'};
 let tab='map';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
 
 function goalName(gid){const g=S.goals.find(g=>g.id==gid);return g?g.title:''}
@@ -376,6 +425,7 @@ habits(){
   ${S.habits.map(h=>`<div class="card"><div class="row"><span class="muted" style="font-weight:700">${M}月</span><strong class="grow">${ed('h',h.id,h.title)}</strong><span>🔥${streak(h)}日</span><span class="muted">${M}月は${days.filter(d=>h.log.includes(d)).length}回 / ${n}日</span><button class="x" onclick="if(ok(this))delHabit('${h.id}')">×</button></div>
   <div class="hab">${'<div class="hd blank"></div>'.repeat(new Date(Y,M-1,1).getDay())}${days.map((d,i)=>{const w=new Date(Y,M-1,i+1).getDay();return `<div class="hd ${d==today()?'td':''} ${w==0?'sun':w==6?'sat':''}"><small>${i+1}日</small><small class="wd">${WD[w]}</small><span title="${d}" class="${h.log.includes(d)?'on':''} ${d>today()?'fut':''}" onclick="habit('${h.id}','${d}')"></span></div>`}).join('')}</div></div>`).join('')}`;
 },
+other(){const o=O();return `<div class="otabs">${Object.entries(OTABS).map(([k,v])=>`<button class="${OT==k?'on':''}" onclick="OT='${k}';render();window.scrollTo(0,0)">${v}</button>`).join('')}</div><h2 style="font-size:20px;color:var(--ink)">${OTABS[OT]}</h2>${OV[OT](o)}`},
 review(){
   const wk=new Date();wk.setDate(wk.getDate()-7);const w=ymd(wk);
   const done=S.tasks.filter(t=>t.doneAt&&t.doneAt>=w);
@@ -438,6 +488,12 @@ function loadSample(){
     T('飲み会の出欠返信','',0,1,0),T('メール整理','',1,1,0),T('SNSを何となく見る','',null,0,0),T('税金の書類を提出','',-1,1,1)],
    habits:[{id:'h1',title:'英語アプリ10分',log:[...Array(12)].map((_,i)=>d(-i))},{id:'h2',title:'朝の散歩',log:[0,1,2,4,5,7,8,9,12,15].map(i=>d(-i))},{id:'h3',title:'日記を書く',log:[1,2,3,6,9].map(i=>d(-i))}]};
   S.tasks.forEach(t=>{t.cat=t.goal=='g1'||/請求|税金|メール/.test(t.title)?'work':/献立|ジム|飲み会|SNS/.test(t.title)?'private':/英会話|単語/.test(t.title)?'daily':''});
+  S.other={philo:{rinen:'誠実であること。人の可能性を信じ、関わる人を元気にする。',purpose:'健康を通じて、家族と地域の人が自分らしく生きられる場をつくる。',vision:'80歳で家族や仲間に囲まれ、「あなたのおかげで人生が変わった」と言われている。'},
+   life:{text:'朝6時、海の見える家で目覚める。家族とテラスで朝食をとり、午前中は好きな仕事に集中。午後はジムで体を動かし、夕方は子どもと散歩。週末は仲間とキャンプへ。',cats:{'住まい・暮らし':'海の近くの一軒家。広い庭と犬。','仕事':'自分の事業を複数持ち、週3日の稼働で回っている。','お金':'年収1000万円。毎月の投資を継続。'},imgs:[]},
+   list:['世界一周する','海外に住む','犬を飼う','一軒家に住む','フルマラソン完走','スカイダイビング','オーロラを見る','本を出版する','家族旅行で全国47都道府県','自分のお店を持つ'].map((t,i)=>({t,done:i==2})),
+   birth:'1994',hist:{22:'大学卒業・就職',30:'独立を決意',32:'独立・結婚',34:'1店舗目オープン',35:'第1子誕生',38:'新事業スタート',42:'週3日稼働に',60:'セミリタイア・海外移住'},
+   partners:[{id:'p1',name:'パートナー',rel:'妻',profile:'カフェや本が好き。落ち着いた時間が好きだけど行動派。',need:{'健康・体力':'クリーンな食事','家族・家庭':'月1回は実家に帰りたい','趣味・教養':'カフェ・本・美術館'},can:{'健康・体力':'良い食材を選んで買う','家族・家庭':'一緒に帰省する','趣味・教養':'休日に連れて行く'},acts:[{t:'週末に美術館へ行く',date:'',done:false},{t:'月1回の実家帰省を予定に入れる',date:'',done:true}]}],
+   people:{'家族・親族関係':[{name:'妻',depth:5},{name:'父',depth:4}],'会社・仕事関係':[{name:'Aさん',depth:3},{name:'Bさん',depth:4},{name:'Cさん',depth:2}],'能力開発関係':[{name:'メンター D',depth:4}],'健康・体力関係':[{name:'トレーナー E',depth:3}]}};
   S.goals.forEach(g=>OPEN.add(g.id));save();
 }
 function flag(i,k){const t=S.tasks.find(t=>t.id==i);t[k]=!t[k];save()}
@@ -472,6 +528,7 @@ function importData(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(
 function tog(k){OPEN.has(k)?OPEN.delete(k):OPEN.add(k);render()}
 OPEN.add('root');
 function render(){
+  if(S.skin!==undefined&&document.documentElement.dataset.skin!==(S.skin||undefined)){try{localStorage.setItem('dc-skin',S.skin)}catch(e){}applySkin(S.skin)}
   // 旧メモ機能のデータを削除（端末・クラウド両方）
   if((S.tasks||[]).some(t=>'note' in t)){S.tasks.forEach(t=>delete t.note);setTimeout(save)}
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
@@ -480,6 +537,67 @@ function render(){
   const tl=document.getElementById('tl');
   if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 }
+// ===== 設定（テーマ） =====
+const SKINS=[['','落ち着いた','グリーン×生成り',['#f6f4ef','#2f5d50','#e8f0ec']],['pop','明るいPOP','ピンク×クリーム',['#fff8ec','#ff4f87','#ffe4ee']],['gold','ゴージャス','ブラック×ゴールド',['#121010','#d4af37','#2c2618']],['ocean','爽やか','ブルー×ホワイト',['#eef5fb','#1e6fb8','#e0edf9']],['sakura','やさしい','さくら色',['#fdf4f5','#c25b7a','#f9e1e8']],['night','ナイト','ダーク×ブルー',['#0f1115','#8ab4f8','#1d2633']]];
+function skinNow(){try{return localStorage.getItem('dc-skin')??(S.skin||'')}catch(e){return S.skin||''}}
+function applySkin(k){if(k)document.documentElement.dataset.skin=k;else delete document.documentElement.dataset.skin;
+  const m=document.querySelector('meta[name=theme-color]');const sk=SKINS.find(x=>x[0]==k);if(m&&sk)m.content=sk[3][1]}
+function setSkin(k){try{localStorage.setItem('dc-skin',k)}catch(e){}S.skin=k;applySkin(k);save();openSet()}
+function openSet(){closeSet();const cur=skinNow();document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="setm" onclick="if(event.target==this)closeSet()"><div class="mbox">
+  <div class="row"><h2 style="margin:0">⚙ 設定</h2><button class="x" style="margin-left:auto" onclick="closeSet()">×</button></div>
+  <h3>サイトの色</h3><div class="skins">${SKINS.map(([k,n,d,c])=>`<button class="skin ${k==cur?'on':''}" onclick="setSkin('${k}')"><span class="sw" style="background:linear-gradient(135deg,${c[0]} 0 50%,${c[1]} 50% 75%,${c[2]} 75%)"></span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
+  <p class="muted">色はログインしている端末どうしで同期されます。</p></div></div>`)}
+function closeSet(){document.getElementById('setm')?.remove()}
+
+// ===== その他（人生理念ほか） =====
+let OT='philo';
+const OTABS={philo:'人生理念',life:'本当に望んでいる生活',list:'やりたいこと100',hist:'自分100年史',partner:'パワーパートナーカルテ',people:'人材マップ'};
+const THEMES=['健康・体力','人間関係','家族・家庭','仕事・職業','能力開発','経済・蓄財','趣味・教養'];
+const PCATS=['家族・親族関係','会社・仕事関係','能力開発関係','学校関係','経済・蓄財関係','健康・体力関係','趣味・教養関係','その他'];
+const DEPTH=['','顔見知り程度','ときどき話す仲','一緒に何かをする仲','信頼して相談できる','人生の師・親友'];
+function O(){S.other=S.other||{};const o=S.other;o.philo=o.philo||{};o.life=o.life||{cats:{},imgs:[]};o.life.cats=o.life.cats||{};o.life.imgs=o.life.imgs||[];
+  o.list=o.list||[];o.hist=o.hist||{};o.partners=o.partners||[];o.people=o.people||{};return o}
+function saveQ(){if(SAMPLE)return;S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushSoon()}
+function oset(path,v,rerender){let o=O();const ks=path.split('.');for(let i=0;i<ks.length-1;i++){const k=ks[i];if(o[k]==null)o[k]=/^\d+$/.test(ks[i+1])?[]:{};o=o[k]}o[ks[ks.length-1]]=v;rerender?save():saveQ()}
+const ta=(path,val,ph,rows)=>`<textarea rows="${rows||3}" placeholder="${ph||''}" onchange="oset('${path}',this.value)">${esc(val||'')}</textarea>`;
+const ti=(path,val,ph,cls)=>`<input class="${cls||''}" value="${esc(val||'')}" placeholder="${ph||''}" onchange="oset('${path}',this.value)">`;
+const OV={
+philo(o){const p=o.philo;return `<div class="card"><h3>人生理念</h3><p class="muted">人生で最も大切にしたい価値観・信条は？</p>${ta('philo.rinen',p.rinen,'例：誠実であること。人の可能性を信じ、関わる人を元気にする。',4)}</div>
+  <div class="card"><h3>私の人生の目的</h3><p class="muted">何のために生きる？　誰にどんな貢献をしたい？</p>${ta('philo.purpose',p.purpose,'例：健康を通じて、家族と地域の人が自分らしく生きられる社会をつくる。',4)}</div>
+  <div class="card"><h3>人生ビジョン</h3><p class="muted">人生の最後にどんな自分になっていたい？</p>${ta('philo.vision',p.vision,'例：80歳で、家族や仲間に囲まれ「あなたのおかげで人生が変わった」と言われている。',4)}</div>`},
+life(o){const L=o.life,cats=['住まい・暮らし','仕事','家族・パートナー','健康・体','お金','趣味・遊び','人間関係','社会貢献'];
+  return `<div class="card"><h3>本当に望んでいる生活</h3><p class="muted">理想の1日・1年を、五感で感じられるくらい具体的に書いてみましょう。</p>${ta('life.text',L.text,'例：朝6時、海の見える家で目覚める。妻とテラスでコーヒーを飲み…',6)}</div>
+  <h2>ビジョンボード <span class="muted">（画像で未来を可視化 ・ 最大12枚）</span></h2>
+  <div class="vb">${L.imgs.map((im,i)=>`<figure><img src="${im.src}" alt=""><figcaption><input value="${esc(im.cap||'')}" placeholder="ひとこと" onchange="oset('life.imgs.${i}.cap',this.value)"></figcaption><button class="x vbx" onclick="if(ok(this)){O().life.imgs.splice(${i},1);save()}">×</button></figure>`).join('')}
+   ${L.imgs.length<12?`<label class="vbadd">＋ 画像を追加<input type="file" accept="image/*" multiple hidden onchange="addImgs(this.files)"></label>`:''}</div>
+  <h2>分野ごとの理想</h2><div class="g2">${cats.map(c=>`<div class="card"><h3>${c}</h3>${ta('life.cats.'+c,L.cats[c],'どうなっていたら最高？',3)}</div>`).join('')}</div>`},
+list(o){const L=o.list,n=L.filter(x=>x&&x.t).length,d=L.filter(x=>x&&x.done).length;
+  return `<div class="card"><p class="muted" style="margin:0">何の制限もなかったら、人生で何をしてみたい？　大きなことも小さなことも、思いついた順に書き出しましょう。</p>
+   <div class="row" style="margin-top:8px"><b>${n} / 100 個</b><span class="muted">達成 ${d}</span><div class="bar" style="flex:1;min-width:120px"><i style="width:${n}%"></i></div></div></div>
+  <div class="l100">${[...Array(100)].map((_,i)=>{const x=L[i]||{};return `<div class="li ${x.done?'done':''}"><span class="no">${i+1}</span><input value="${esc(x.t||'')}" onchange="oset('list.${i}.t',this.value)"><input type="checkbox" title="達成" ${x.done?'checked':''} onchange="oset('list.${i}.done',this.checked,true)"></div>`}).join('')}</div>`},
+hist(o){const b=+o.birth||0,cy=new Date().getFullYear(),age=b?cy-b:0;
+  return `<div class="card row"><span>生まれた年</span><input type="number" style="width:110px" value="${o.birth||''}" placeholder="例：1994" onchange="oset('birth',this.value,true)">${b?`<span class="muted">今 ${age} 歳</span>`:''}
+   <span class="muted" style="flex-basis:100%">過去にやり遂げたこと、これから成し遂げること、年代ごとのテーマを自由に書きましょう。</span></div>
+  <div class="h100">${[...Array(100)].map((_,i)=>{const a=i+1;return `<div class="hi ${a==age?'cur':a<age?'past':''}"><span class="no">${a}歳${b?`<small>${b+a}</small>`:''}</span><input value="${esc(o.hist[a]||'')}" onchange="oset('hist.${a}',this.value)"></div>`}).join('')}</div>`},
+partner(o){return `<p class="muted">人生で大切な人（パートナー・家族・仲間）が求めていることと、自分ができる貢献を書き出しましょう。</p>
+  ${o.partners.map((p,pi)=>`<div class="card pk"><div class="row"><h3 style="margin:0" class="grow">${ti(`partners.${pi}.name`,p.name,'お名前','pname')}</h3>${ti(`partners.${pi}.rel`,p.rel,'関係（例：妻）')}<button class="x" title="削除" onclick="if(ok(this)){O().partners.splice(${pi},1);save()}">×</button></div>
+   <label class="muted">プロフィール／パーソナリティ</label>${ta(`partners.${pi}.profile`,p.profile,'例：2024年結婚。カフェや本が好き。落ち着いた時間が好きだけど、行動派。',2)}
+   <div class="ptbl"><div class="ph"><span>テーマ</span><span>${esc(p.name||'相手')}さんが求めていること</span><span>私ができること</span></div>
+   ${THEMES.map(t=>`<div class="pr"><span>${t}</span>${ta(`partners.${pi}.need.${t}`,(p.need||{})[t],'',1)}${ta(`partners.${pi}.can.${t}`,(p.can||{})[t],'',1)}</div>`).join('')}</div>
+   <h3>貢献リスト（行動計画）</h3>
+   ${(p.acts||[]).map((a,ai)=>`<div class="row act ${a.done?'done':''}"><input type="checkbox" ${a.done?'checked':''} onchange="oset('partners.${pi}.acts.${ai}.done',this.checked,true)">${ti(`partners.${pi}.acts.${ai}.t`,a.t,'行動計画','grow')}<input type="date" value="${a.date||''}" onchange="oset('partners.${pi}.acts.${ai}.date',this.value)"><button class="x" onclick="O().partners[${pi}].acts.splice(${ai},1);save()">×</button></div>`).join('')}
+   <button class="ghost" onclick="const p=O().partners[${pi}];(p.acts=p.acts||[]).push({t:'',date:'',done:false});save()">＋ 行動を追加</button></div>`).join('')}
+  <button class="btn" onclick="O().partners.push({id:id(),name:'',rel:'',profile:'',need:{},can:{},acts:[]});save()">＋ パワーパートナーを追加</button>`},
+people(o){return `<div class="card"><p class="muted" style="margin:0 0 6px">分野ごとに関わりの深い人を書き出し、関係の深さ（1〜5）を選びましょう。</p>
+   <div class="dleg">${DEPTH.slice(1).map((d,i)=>`<span><b>${i+1}</b> ${d}</span>`).join('')}</div></div>
+  <div class="g2">${PCATS.map(c=>{const L=o.people[c]||[];return `<div class="card"><h3>◆ ${c} <span class="muted">${L.length}人</span></h3>
+   ${L.map((x,i)=>`<div class="pp"><input value="${esc(x.name||'')}" placeholder="名前" onchange="oset('people.${c}.${i}.name',this.value)"><span class="dp">${[1,2,3,4,5].map(n=>`<button class="${x.depth==n?'on':''}" title="${DEPTH[n]}" onclick="oset('people.${c}.${i}.depth',${n},true)">${n}</button>`).join('')}</span><button class="x" onclick="O().people['${c}'].splice(${i},1);save()">×</button></div>`).join('')}
+   <input placeholder="＋ 名前を入れて Enter" onkeydown="if(ent(event)&&this.value.trim()){const o=O();(o.people['${c}']=o.people['${c}']||[]).push({name:this.value.trim(),depth:3});save()}"></div>`}).join('')}</div>`}
+};
+function addImgs(files){const o=O();[...files].slice(0,12-o.life.imgs.length).forEach(f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const m=560,sc=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  o.life.imgs.push({src:c.toDataURL('image/jpeg',.72),cap:''});save()};im.src=r.result};r.readAsDataURL(f)})}
+
 // ===== 今日のタイムライン（ドラッグで時間割り当て） =====
 const TL0=5*60,TL1=24*60,PPM=1.4,SNAP=15;let DR=null;
 const fm=m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
@@ -573,6 +691,7 @@ function initSync(){if(SAMPLE||!FB_CONFIG.apiKey||!window.firebase)return;
 }
 
 if(SAMPLE){loadSample();document.title='サンプル - Dream Catcher';document.body.insertAdjacentHTML('afterbegin','<div class="sbar">👀 サンプル表示中：自由に触って試せます。ここでの操作は保存されず、あなたのデータにも影響しません。<a href="./">自分のページに戻る</a></div>');document.getElementById('sbtn').remove()}
+applySkin(skinNow());
 render();acctUI();initSync();
 </script>
 </body>
