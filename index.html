@@ -278,7 +278,7 @@ goals(){
    <div class="muted">なぜ？ <input style="width:70%" value="${esc(g.why)}" placeholder="この目標が大事な理由" onchange="setG('${g.id}','why',this.value)"></div>
    <h2 style="margin:12px 0 4px">成果指標 (Key Results)</h2>
    ${g.krs.map((k,i)=>`<div class="row"><span class="grow">${esc(k.t)}</span><input type="number" style="width:80px" value="${k.cur}" onchange="setKr('${g.id}',${i},this.value)"> / ${k.target}<button class="x" onclick="if(ok(this))delKr('${g.id}',${i})">×</button></div>`).join('')}
-   <div class="row" style="margin-top:6px"><input id="kr${g.id}" class="grow" placeholder="例：TOEIC 850点"><input id="kt${g.id}" type="number" style="width:80px" placeholder="目標値"><button class="ghost" onclick="addKr('${g.id}')">＋KR</button></div>
+   <div class="row" style="margin-top:6px"><input id="kr${g.id}" class="grow" placeholder="成果指標（例：TOEIC 850点）" onkeydown="if(ent(event))addKr('${g.id}')"><input id="kt${g.id}" type="number" style="width:90px" placeholder="目標値" onkeydown="if(ent(event))addKr('${g.id}')"><button class="btn" onclick="addKr('${g.id}')">確定</button></div>
    <h2 style="margin:12px 0 4px">中間目標（マイルストーン）</h2>
    ${(g.subs||[]).map(sb=>`<div class="row"><span class="grow">◆ ${esc(sb.title)}</span><input type="date" value="${sb.due||''}" onchange="setSub('${g.id}','${sb.id}',this.value)"><span class="muted">${ts.filter(t=>t.sub==sb.id&&t.done).length}/${ts.filter(t=>t.sub==sb.id).length}</span><button class="x" onclick="if(ok(this))delSub('${g.id}','${sb.id}')">×</button></div>`).join('')}
    <div class="row"><input class="grow" placeholder="例：TOEIC 750点を取る（3ヶ月後）" onkeydown="if(ent(event))addSub('${g.id}',this.value)"></div>
