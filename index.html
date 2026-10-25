@@ -282,6 +282,7 @@ function qOf(t){return t.important&&t.urgent?1:t.important?2:t.urgent?3:4}
 function qb(t){return `<span class="qb q${qOf(t)}" title="第${qOf(t)}象限">(${QN[qOf(t)]})</span>`}
 function catStyle(t){return t.cat&&CATS[t.cat]?`style="--cat:${CATS[t.cat][1]}"`:''}
 function catBtn(t){const c=CATS[t.cat];return `<button class="cb ${c?'on':''}" ${catStyle(t)} title="色分け（押すたびに切替）" onclick="cycCat('${t.id}')">${c?'● '+c[0]:'○ 色'}</button>`}
+function qOpts(){return `<option value="0">象限：自動</option><option value="1">(I) 重要×緊急</option><option value="2">(II) 重要×緊急でない</option><option value="3">(III) 重要でない×緊急</option><option value="4">(IV) 重要でない×緊急でない</option>`}
 function catOpts(){return `<option value="">色なし</option>`+Object.entries(CATS).map(([k,[l]])=>`<option value="${k}">● ${l}</option>`).join('')}
 function cycCat(i){const t=S.tasks.find(t=>t.id==i),ks=['',...Object.keys(CATS)];t.cat=ks[(ks.indexOf(t.cat||'')+1)%ks.length];save()}
 function ed(kind,path,val,ph){const k=kind+':'+path;
@@ -356,7 +357,7 @@ today(){
   <div class="card mit">${mits.length?mits.map(todayRow).join(''):'<p class="muted">下の「新しく追加」か「タスク管理から選ぶ」で、今日やることを決めましょう。</p>'}
   ${mits.length>3?'<p class="muted" style="color:var(--warn)">3つを超えています。本当に今日全部必要？</p>':''}</div>
   <h2>＋ 今日のタスクを新しく追加</h2>
-  <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><select id="qc">${catOpts()}</select><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
+  <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><select id="qc">${catOpts()}</select><select id="qq" title="第何象限か">${qOpts()}</select><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
   <h2>＋ タスク管理から選ぶ <span class="muted">${pool.length}件 ・ 期限が近い順</span></h2>
   <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${qb(t)}${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
   <h2>期限が今日・過ぎたもの</h2><div class="card">${due.length?due.map(taskRow).join(''):'<p class="muted">なし 🎉</p>'}</div>
@@ -442,8 +443,8 @@ review(){
   <h2>過去のレビュー</h2>${S.reviews.slice().reverse().map(r=>`<div class="card"><div class="muted">${r.date}（完了${r.n}件）</div><div style="white-space:pre-wrap">${esc(r.text)}</div></div>`).join('')}`;
 }};
 
-function quickAdd(big){return `<div class="card row"><input id="qa" class="grow" placeholder="${big?'タスクを入力して Enter':'＋ 今日のタスクを追加'}" onkeydown="if(ent(event))addTask(this.value,document.getElementById('qg').value,document.getElementById('qd').value,${!big})"><select id="qg">${goalOpts()}</select><input id="qd" type="date">${big?`<select id="qr">${repOpts()}</select>`:''}<select id="qc">${catOpts()}</select></div>`}
-function addTask(title,goal,due,isMit){if(!title.trim())return;const qr=document.getElementById('qr'),rep=qr?qr.value:'',qc=document.getElementById('qc'),cat=qc?qc.value:'';let sub='';[goal,sub]=(goal||'').split('|');S.tasks.push({id:id(),title:title.trim(),goal:goal||'',sub:sub||'',due:due||'',done:false,mit:isMit?today():'',repeat:rep,cat,urgent:false,important:!!goal});save();setTimeout(()=>document.getElementById(goal&&tab=='goals'?'ga'+goal:'qa')?.focus())}
+function quickAdd(big){return `<div class="card row"><input id="qa" class="grow" placeholder="${big?'タスクを入力して Enter':'＋ 今日のタスクを追加'}" onkeydown="if(ent(event))addTask(this.value,document.getElementById('qg').value,document.getElementById('qd').value,${!big})"><select id="qg">${goalOpts()}</select><input id="qd" type="date">${big?`<select id="qr">${repOpts()}</select>`:''}<select id="qc">${catOpts()}</select><select id="qq" title="第何象限か">${qOpts()}</select></div>`}
+function addTask(title,goal,due,isMit){if(!title.trim())return;const qr=document.getElementById('qr'),rep=qr?qr.value:'',qc=document.getElementById('qc'),cat=qc?qc.value:'',qq=document.getElementById('qq'),qv=qq?+qq.value:0;let sub='';[goal,sub]=(goal||'').split('|');S.tasks.push({id:id(),title:title.trim(),goal:goal||'',sub:sub||'',due:due||'',done:false,mit:isMit?today():'',repeat:rep,cat,urgent:qv?(qv==1||qv==3):false,important:qv?qv<=2:!!goal});save();setTimeout(()=>document.getElementById(goal&&tab=='goals'?'ga'+goal:'qa')?.focus())}
 const REP={'':'🔁 なし',daily:'🔁 毎日',everyn:'🔁 ○日ごと',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
 const WDN='日月火水木金土';let RPO='';
 function repOpts(v){return Object.entries(REP).map(([k,l])=>`<option value="${k}" ${k==(v||'')?'selected':''}>${l}</option>`).join('')}
