@@ -169,7 +169,7 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .blk.done{opacity:.5;text-decoration:line-through}
 .blk b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk small{opacity:.85;font-size:11px}
-.blk.gev{background:var(--line);color:var(--ink);cursor:default;left:auto;width:45%;right:2px;z-index:1;opacity:.9;padding-right:6px}
+.blk.gev{background:color-mix(in srgb,var(--gc) 22%,var(--card));border-left:4px solid var(--gc);color:var(--ink);cursor:default;left:auto;width:45%;right:2px;z-index:1;opacity:.9;padding-right:6px}
 .bx{position:absolute;top:1px;right:5px;cursor:pointer;font-size:14px;opacity:.8}
 .rz{position:absolute;left:0;right:0;bottom:0;height:8px;cursor:ns-resize;touch-action:none}
 .rz::after{content:'';position:absolute;left:50%;bottom:2px;width:22px;margin-left:-11px;border-top:2px solid #fff8}
@@ -240,6 +240,8 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .howto{padding-left:20px;margin:6px 0}.howto li{margin:2px 0}
 .steps{display:flex;flex-direction:column;gap:10px;margin:6px 0}.step{display:flex;gap:10px;align-items:flex-start}.step>b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--bg);display:flex;align-items:center;justify-content:center}.step p{margin:6px 0 0}.step .btn{display:inline-block;text-decoration:none}
 .icsl{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.icsi{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.gsw{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.gsw button{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}.gsw button.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--card) inset}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -564,7 +566,8 @@ function openSet(){closeSet();const cur=skinNow();document.body.insertAdjacentHT
   <h3>サイトの色</h3><div class="skins">${SKINS.map(([k,n,d,c])=>`<button class="skin ${k==cur?'on':''}" onclick="setSkin('${k}')"><span class="sw" style="background:linear-gradient(135deg,${c[0]} 0 50%,${c[1]} 50% 75%,${c[2]} 75%)"></span><b>${n}</b><small>${d}</small></button>`).join('')}</div>
   <p class="muted">色はログインしている端末どうしで同期されます。</p>
   <h3>Googleカレンダーの予定を取り込む（表示のみ）</h3>
-  ${icsList().length?`<div class="icsl">${icsList().map((c,i)=>`<div class="row"><span class="grow">✅ ${esc(c.name||'カレンダー '+(i+1))}</span><button class="ghost" onclick="delIcs(${i})">解除</button></div>`).join('')}</div><p class="muted">別のカレンダーも表示したいときは、同じ手順でもう1つ追加できます。</p>`:''}
+  ${icsList().length?`<div class="icsl">${icsList().map((c,i)=>`<div class="icsi"><div class="row"><span class="cdot" style="--cat:${icsCol(c,i)};width:12px;height:12px"></span><b class="grow">${esc(c.name||'カレンダー '+(i+1))}</b><button class="ghost" onclick="delIcs(${i})">解除</button></div>
+   <div class="gsw">${GCOL.map(col=>`<button class="${icsCol(c,i)==col?'on':''}" style="background:${col}" title="この色にする" onclick="setIcsCol(${i},'${col}')"></button>`).join('')}</div></div>`).join('')}</div><p class="muted">別のカレンダーも表示したいときは、同じ手順でもう1つ追加できます。</p>`:''}
   ${`<div class="steps">
    <div class="step"><b>1</b><div><a class="btn" href="https://calendar.google.com/calendar/r/settings/calendar/${encodeURIComponent(fbUser&&fbUser.email?btoa(fbUser.email).replace(/=+$/,''):'')}" target="_blank" rel="noopener" onclick="if(!fbUser||!fbUser.email){this.href='https://calendar.google.com/calendar/r/settings'}">Googleカレンダーの設定を開く ↗</a>
      <p class="muted">開いたページを下へスクロールし、「<b>iCal 形式の非公開 URL</b>」の横の <b>コピーボタン</b>（四角が2つ重なったアイコン）を押す<br><small>（ページが違うときは、左の「マイカレンダーの設定」から表示したいカレンダーの名前を選ぶ）</small></p></div></div>
@@ -633,27 +636,29 @@ function timeline(){
      <b>${QN[qOf(t)]} ${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
-  const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(20,(e.e-e.s)*PPM)}px" title="Googleカレンダーの予定"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
+  const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(20,(e.e-e.s)*PPM)}px;--gc:${e.c||'#7b8794'}" title="${esc(e.n||'Googleカレンダー')}"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
   return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${!icsList().length&&!SAMPLE?`<button class="ghost" style="font-size:12px" onclick="openSet();setTimeout(()=>document.querySelector('.steps')?.scrollIntoView({block:'center'}),50)">📅 Googleの予定を表示する</button>`:''}${icsList().length&&!SAMPLE?`<button class="btn" style="padding:4px 12px;font-size:12px" onclick="icsLoad(true)">🔄 最新の予定を取り込む</button><span class="muted" style="font-size:11px">${gstate||(icsAt?icsAt+' 取り込み':'')}</span>`:''}</div>
    <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
    ${tpPanel()}
-   ${GALL.length?`<div class="allday">${GALL.map(x=>`<span>📅 ${esc(x)}</span>`).join('')}</div>`:''}
+   ${GALL.length?`<div class="allday">${GALL.map(x=>`<span style="border-left:4px solid ${x.c}">📅 ${esc(x.t)}</span>`).join('')}</div>`:''}
    <div class="tl" id="tl"><div class="tlg" id="tlg" style="height:${(TL1-TL0)*PPM}px">${hrs.join('')}
    ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${ev}${bl}</div></div>`}
 
 // ===== Googleカレンダーの予定を取り込む（読み込みのみ・非公開iCal URL） =====
 let GEV=[],GALL=[],gstate='',icsDay='',icsAt='';
+const GCOL=['#7b8794','#e67c73','#f6bf26','#33b679','#039be5','#7986cb','#8e24aa','#f4511e','#616161','#d81b60'];
+function icsCol(c,i){return c.color||GCOL[i%GCOL.length]}
 function icsList(){if(S.icsUrl&&!S.icsUrls){S.icsUrls=[{url:S.icsUrl,name:''}]}delete S.icsUrl;return S.icsUrls||(S.icsUrls=[])}
 function loadICAL(){return window.ICAL?Promise.resolve():new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js';sc.onload=ok;sc.onerror=ng;document.head.appendChild(sc)})}
 let icsTs=0;
 async function icsLoad(force){if(!icsList().length||SAMPLE)return;if(!force&&icsDay==today()&&Date.now()-icsTs<10*60e3)return;icsDay=today();icsTs=Date.now();if(force)gstate='読み込み中…';render();
   try{await loadICAL();const d0=new Date();d0.setHours(0,0,0,0);const d1=new Date(d0);d1.setDate(d1.getDate()+1);const ev=[],all=[];let fail=0,dirty=false;
-   for(const c of icsList()){try{const r=await fetch('/api/ics?url='+encodeURIComponent(c.url));if(!r.ok)throw new Error(r.status);
+   for(const [ci,c] of icsList().entries()){const col=icsCol(c,ci);try{const r=await fetch('/api/ics?url='+encodeURIComponent(c.url));if(!r.ok)throw new Error(r.status);
     const comp=new ICAL.Component(ICAL.parse(await r.text()));comp.getAllSubcomponents('vtimezone').forEach(tz=>{try{ICAL.TimezoneService.register(tz)}catch(e){}});
     const nm=comp.getFirstPropertyValue('x-wr-calname');if(nm&&c.name!==nm){c.name=nm;dirty=true}
     const vs=comp.getAllSubcomponents('vevent'),ex={};vs.forEach(v=>{if(v.hasProperty('recurrence-id')){const u=v.getFirstPropertyValue('uid');(ex[u]=ex[u]||[]).push(v)}});
-    const add=(sum,st,en,isDate)=>{const a=st.toJSDate();let b=en?en.toJSDate():a;if(isDate&&b<=a)b=new Date(a.getTime()+864e5);if(b<=d0||a>=d1)return;
-      if(isDate){all.push(sum);return}const m=x=>x<d0?0:x>=d1?1440:x.getHours()*60+x.getMinutes();ev.push({t:sum,s:Math.max(TL0,m(a)),e:Math.min(TL1,m(b))})};
+    const add=(sum,st,en,isDate)=>{const cname=c.name||'';const a=st.toJSDate();let b=en?en.toJSDate():a;if(isDate&&b<=a)b=new Date(a.getTime()+864e5);if(b<=d0||a>=d1)return;
+      if(isDate){all.push({t:sum,c:col});return}const m=x=>x<d0?0:x>=d1?1440:x.getHours()*60+x.getMinutes();ev.push({t:sum,c:col,n:cname,s:Math.max(TL0,m(a)),e:Math.min(TL1,m(b))})};
     vs.forEach(v=>{if(v.hasProperty('recurrence-id'))return;const e=new ICAL.Event(v);if((v.getFirstPropertyValue('status')||'')=='CANCELLED')return;
       (ex[e.uid]||[]).forEach(x=>{try{e.relateException(x)}catch(_){}});
       if(e.isRecurring()){const it=e.iterator();let t,n=0;while((t=it.next())&&n++<3000){const od=e.getOccurrenceDetails(t),a=od.startDate.toJSDate();if(a>=d1)break;
@@ -670,6 +675,7 @@ setInterval(()=>{if(tab=='today'&&!document.hidden)icsLoad()},10*60e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&tab=='today')icsLoad()});
 function setIcs(v){v=v.trim();if(v&&!/^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\.ics$/.test(v)){alert('「iCal 形式の非公開 URL」を貼ってください（https://calendar.google.com/calendar/ical/…/basic.ics）');return}
   if(!v)return;const L=icsList();if(L.some(c=>c.url==v)){alert('このカレンダーは追加済みです');return}L.push({url:v,name:''});GEV=[];GALL=[];icsDay='';save();icsLoad(true);openSet()}
+function setIcsCol(i,col){icsList()[i].color=col;GEV.length=0;icsDay='';save();icsLoad(true);openSet()}
 function delIcs(i){icsList().splice(i,1);GEV=[];GALL=[];icsDay='';save();icsLoad(true);openSet()}
 
 let TP='';
