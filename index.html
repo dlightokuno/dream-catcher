@@ -179,7 +179,7 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .allday{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;font-size:12px}.allday span{background:var(--acc2);padding:2px 8px;border-radius:6px}
 @media(max-width:860px){.tgrid{grid-template-columns:1fr}.tlcol{position:static}.tl{height:60vh}}
 .tpb{padding:4px 8px}
-.tpp{background:var(--acc2);border:1.5px solid var(--acc);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.tpp{position:fixed;z-index:60;right:20px;bottom:20px;width:340px;max-width:calc(100vw - 24px);box-shadow:0 10px 30px #0003;background:var(--card);border:2px solid var(--acc);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 .blk.short{flex-direction:row;align-items:center;gap:6px;padding-top:0;padding-bottom:0;font-size:11.5px}
 .blk.short b{flex:0 1 auto;min-width:0}.blk.short small{flex:none;font-size:10.5px}
 .blk.short .bx{top:50%;transform:translateY(-50%)}.blk.short .rz{height:5px}
@@ -289,6 +289,8 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .sb.addb{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
 .sb.tpb{border-color:var(--acc);color:var(--acc);font-weight:600}
 .sb.backb{border-color:#d69e2e;background:#fdf3dc;color:#9c6b12;font-weight:600}
+@media(max-width:600px){.tpp{left:12px;right:12px;width:auto;bottom:calc(64px + env(safe-area-inset-bottom));padding:10px 12px;gap:6px}.tpp .row>select{width:auto;flex:1}.tpp p{display:none}}
+.blk.sel{outline:3px solid var(--warn);outline-offset:1px;z-index:5}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -604,6 +606,7 @@ function render(){
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   app.innerHTML=V[tab]();
   addMk();
+  document.getElementById('tpp')?.remove();if(tab=='today'&&TP)document.body.insertAdjacentHTML('beforeend',tpPanel());
   if(tab=='today'&&icsList().length&&(icsDay!=today()||Date.now()-icsTs>10*60e3))setTimeout(()=>icsLoad());
   const tl=document.getElementById('tl');
   if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
@@ -731,14 +734,13 @@ function timeline(){
   const ts=S.tasks.filter(slotOn),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   const {LAY,NAR}=layout([...ts.map(t=>({k:'t'+t.id,s:t.slot.start,e:Math.max(t.slot.end,t.slot.start+15)})),...GEV.map((e,i)=>({k:'g'+i,s:e.s,e:Math.max(e.e,e.s+15)}))]);
   const hrs=[];for(let h=TL0/60;h<TL1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-TL0)*PPM}px"><span>${h}:00</span></div>`);
-  const bl=ts.map(t=>`<div class="blk ${NAR['t'+t.id]?'narrow':''} ${t.done?'done':''} ${t.slot.end-t.slot.start<=(ZOOM=='all'?60:30)?'short':''}" data-id="${t.id}" style="${LAY['t'+t.id]||''}${t.cat&&CATS[t.cat]?`background:${CATS[t.cat][1]};`:''}top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(MINH,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
+  const bl=ts.map(t=>`<div class="blk ${TP==t.id?'sel':''} ${NAR['t'+t.id]?'narrow':''} ${t.done?'done':''} ${t.slot.end-t.slot.start<=(ZOOM=='all'?60:30)?'short':''}" data-id="${t.id}" style="${LAY['t'+t.id]||''}${t.cat&&CATS[t.cat]?`background:${CATS[t.cat][1]};`:''}top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(MINH,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
      <b>${QN[qOf(t)]} ${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
   const ev=GEV.map((e,gi)=>`<div class="blk gev ${NAR['g'+gi]?'narrow':''} ${e.e-e.s<=(ZOOM=='all'?60:30)?'short':''}" style="${LAY['g'+gi]||''}top:${(e.s-TL0)*PPM}px;height:${Math.max(MINH,(e.e-e.s)*PPM)}px;--gc:${e.c||'#7b8794'}" title="${esc(e.n||'Googleカレンダー')}"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
   return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2><span class="zm"><button class="${ZOOM=='all'?'on':''}" onclick="setZoom('all')">全体</button><button class="${ZOOM=='detail'?'on':''}" onclick="setZoom('detail')">拡大</button></span>${!icsList().length&&!SAMPLE?`<button class="ghost" style="font-size:12px" onclick="openSet();setTimeout(()=>document.querySelector('.steps')?.scrollIntoView({block:'center'}),50)">📅 Googleの予定を表示する</button>`:''}${icsList().length&&!SAMPLE?`<button class="btn" style="padding:4px 12px;font-size:12px" onclick="icsLoad(true)">🔄 最新の予定を取り込む</button><span class="muted" style="font-size:11px">${gstate||(icsAt?icsAt+' 取り込み':'')}</span>`:''}</div>
    <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
-   ${tpPanel()}
    ${GALL.length?`<div class="allday">${GALL.map(x=>`<span style="border-left:4px solid ${x.c}">📅 ${esc(x.t)}</span>`).join('')}</div>`:''}
    <div class="tl ${ZOOM=='all'?'all':''}" id="tl"><div class="tlg" id="tlg" style="height:${(TL1-TL0)*PPM}px">${hrs.join('')}
    ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${ev}${bl}</div></div>`}
@@ -790,15 +792,17 @@ function delIcs(i){icsList().splice(i,1);GEV=[];GALL=[];icsDay='';save();icsLoad
 let TP='';
 // 時間選択の欄は、欄の外をタップすると閉じる
 document.addEventListener('click',e=>{if(!TP)return;const el=e.target;if(el.closest&&(el.closest('#tpp')||el.closest('.tpb')||el.closest('.blk')))return;TP='';render()},true);
-function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'center',behavior:'smooth'}),30)}
+function openTP(id){TP=id;render();setTimeout(()=>{const b=document.querySelector(`.blk[data-id="${id}"]`)||document.getElementById('tl');b?.scrollIntoView({block:'center',behavior:'smooth'})},30)}
 function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
   const n=new Date(),nowm=Math.ceil((n.getHours()*60+n.getMinutes())/15)*15;
   const st=slotOn(t)?t.slot.start:Math.min(TL1-60,Math.max(TL0,nowm)),len=slotOn(t)?t.slot.end-t.slot.start:60;
   const opts=[];for(let m=TL0;m<TL1;m+=15)opts.push(`<option value="${m}" ${m==st?'selected':''}>${fm(m)}</option>`);
   const lens=[15,30,45,60,90,120,150,180,240];if(!lens.includes(len))lens.push(len);lens.sort((a,b)=>a-b);
   return `<div class="tpp" id="tpp"><div><b>${esc(t.title)}</b> の時間</div>
-   <div class="row">開始 <select id="tps">${opts.join('')}</select> 長さ <select id="tpl">${lens.map(l=>`<option value="${l}" ${l==len?'selected':''}>${l<60?l+'分':l%60?Math.floor(l/60)+'時間'+l%60+'分':l/60+'時間'}</option>`).join('')}</select></div>
-   <div class="row"><button class="btn" onclick="setTP()">決定</button>${slotOn(t)?`<button class="ghost" onclick="TP='';unslot('${t.id}')">カレンダーから外す</button>`:''}<button class="ghost" onclick="TP='';render()">キャンセル</button></div></div>`}
+   <div class="row">開始 <select id="tps" onchange="liveTP()">${opts.join('')}</select> 長さ <select id="tpl" onchange="liveTP()">${lens.map(l=>`<option value="${l}" ${l==len?'selected':''}>${l<60?l+'分':l%60?Math.floor(l/60)+'時間'+l%60+'分':l/60+'時間'}</option>`).join('')}</select></div>
+   <p class="muted" style="margin:0;font-size:12px">選ぶとすぐカレンダーに反映されます。カレンダーを見ながら調整できます。</p><div class="row"><button class="btn" onclick="setTP()">決定</button>${slotOn(t)?`<button class="ghost" onclick="TP='';unslot('${t.id}')">カレンダーから外す</button>`:''}<button class="ghost" onclick="TP='';render()">閉じる</button></div></div>`}
+function liveTP(){const t=S.tasks.find(x=>x.id==TP);if(!t)return;const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();save();
+  setTimeout(()=>document.querySelector(`.blk[data-id="${t.id}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}),30)}
 function setTP(){const t=S.tasks.find(x=>x.id==TP);const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();TP='';save()}
 function unslot(i){const t=S.tasks.find(t=>t.id==i);if(t.habit){S.tasks=S.tasks.filter(x=>x!==t);save();return}t.slot=null;save()}
 function dstart(e,id,mode){if(e.button>0)return;e.preventDefault();const t=S.tasks.find(t=>t.id==id);
