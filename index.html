@@ -283,6 +283,9 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .wb{overflow:hidden}.wcol{position:relative;border-left:1px solid var(--line)}.wcol.td{background:color-mix(in srgb,var(--acc) 5%,transparent)}
 .wcol .blk{left:1px;right:1px}
 @media(max-width:600px){.calc{min-height:78px;padding:2px}.chip{font-size:9.5px;padding:0 2px}.caltitle{font-size:15px;flex-basis:100%;order:-1;margin:0}.wh,.wa,.wb{grid-template-columns:34px repeat(var(--n),minmax(0,1fr))}.wt .hr span{font-size:9px;right:2px}}
+.swipe{touch-action:pan-y}
+.swl{animation:swl .22s ease}.swr{animation:swr .22s ease}@keyframes swl{from{transform:translateX(40px);opacity:.4}}@keyframes swr{from{transform:translateX(-40px);opacity:.4}}
+.wcol{cursor:pointer}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -668,7 +671,12 @@ function addImgs(files){const o=O();[...files].slice(0,12-o.life.imgs.length).fo
 
 // ===== カレンダー（月・週・3日） =====
 let CV=null,CD=null;
-function calShift(k){const d=new Date(CD+'T00:00');if(CV=='month')d.setMonth(d.getMonth()+k);else d.setDate(d.getDate()+k*(CV=='week'?7:3));CD=ymd(d);render()}
+// 横フリックで前後へ
+let SW=null;
+document.addEventListener('touchstart',e=>{const el=e.target.closest&&e.target.closest('.swipe');SW=el&&e.touches.length==1?{x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()}:null},{passive:true});
+document.addEventListener('touchend',e=>{if(!SW||tab!='cal')return;const t=e.changedTouches[0],dx=t.clientX-SW.x,dy=t.clientY-SW.y;const ok=Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-SW.t<700;SW=null;
+  if(ok){e.preventDefault();calShift(dx<0?1:-1);const w=document.querySelector('.swipe');if(w){w.classList.add(dx<0?'swl':'swr')}}},{passive:false});
+function calShift(k){const d=new Date(CD+'T00:00');if(CV=='month')d.setMonth(d.getMonth()+k);else d.setDate(d.getDate()+k*(CV=='week'?7:CV=='3d'?3:1));CD=ymd(d);render()}
 function taskItems(d0,d1){const a=ymd(d0),b=ymd(d1),slot=[],due=[];
   S.tasks.forEach(t=>{const c=t.cat&&CATS[t.cat]?CATS[t.cat][1]:'var(--acc)';
     if(t.slot&&t.slot.date>=a&&t.slot.date<b)slot.push({t:QN[qOf(t)]+' '+t.title,c,date:t.slot.date,s:t.slot.start,e:t.slot.end,task:1,done:t.done});
@@ -677,26 +685,26 @@ function chip(x,timed){return `<div class="chip ${x.task?'tk':''} ${x.done?'done
 V.cal=function(){if(!CV)CV=MOB()?'3d':'week';if(!CD)CD=today();if(icsList().length&&!ICSC.length&&!SAMPLE)setTimeout(()=>icsLoad(true));
   const a=new Date(CD+'T00:00');let d0,d1,title;const WD='日月火水木金土';
   if(CV=='month'){d0=new Date(a.getFullYear(),a.getMonth(),1);d0.setDate(d0.getDate()-d0.getDay());d1=new Date(d0);d1.setDate(d1.getDate()+42);title=`${a.getFullYear()}年${a.getMonth()+1}月`}
-  else{d0=new Date(a);if(CV=='week')d0.setDate(d0.getDate()-d0.getDay());d1=new Date(d0);d1.setDate(d1.getDate()+(CV=='week'?7:3));const l=new Date(d1);l.setDate(l.getDate()-1);title=`${d0.getFullYear()}年${d0.getMonth()+1}月${d0.getDate()}日 – ${l.getMonth()+1}月${l.getDate()}日`}
+  else{d0=new Date(a);if(CV=='week')d0.setDate(d0.getDate()-d0.getDay());d1=new Date(d0);d1.setDate(d1.getDate()+(CV=='week'?7:CV=='3d'?3:1));const l=new Date(d1);l.setDate(l.getDate()-1);title=CV=='day'?`${d0.getFullYear()}年${d0.getMonth()+1}月${d0.getDate()}日（${WD[d0.getDay()]}）`:`${d0.getFullYear()}年${d0.getMonth()+1}月${d0.getDate()}日 – ${l.getMonth()+1}月${l.getDate()}日`}
   const g=evIn(d0,d1),tk=taskItems(d0,d1),days=[];for(let d=new Date(d0);d<d1;d.setDate(d.getDate()+1))days.push(ymd(d));
   const head=`<div class="calbar"><button class="ghost" onclick="CD=today();render()">今日</button><button class="ghost" onclick="calShift(-1)">‹</button><button class="ghost" onclick="calShift(1)">›</button><b class="caltitle">${title}</b>
-    <span class="zm" style="margin-left:auto">${[['month','月'],['week','週'],['3d','3日']].map(([k,l])=>`<button class="${CV==k?'on':''}" onclick="CV='${k}';render()">${l}</button>`).join('')}</span>
+    <span class="zm" style="margin-left:auto">${[['month','月'],['week','週'],['3d','3日'],['day','日']].map(([k,l])=>`<button class="${CV==k?'on':''}" onclick="CV='${k}';render()">${l}</button>`).join('')}</span>
     ${icsList().length?`<button class="ghost" title="Googleの予定を再取り込み" onclick="icsLoad(true)">🔄</button>`:`<button class="ghost" style="font-size:12px" onclick="openSet()">📅 Google予定を表示</button>`}</div>`;
   if(CV=='month'){const m=a.getMonth();
-    return head+`<div class="calm"><div class="calmh">${[...WD].map((w,i)=>`<span class="${i==0?'sun':i==6?'sat':''}">${w}</span>`).join('')}</div><div class="calmg">${days.map(ds=>{const d=new Date(ds+'T00:00'),
+    return head+`<div class="calm swipe"><div class="calmh">${[...WD].map((w,i)=>`<span class="${i==0?'sun':i==6?'sat':''}">${w}</span>`).join('')}</div><div class="calmg">${days.map(ds=>{const d=new Date(ds+'T00:00'),
       its=[...g.all.filter(x=>x.date==ds),...tk.due.filter(x=>x.date==ds),...[...g.ev.filter(x=>x.date==ds),...tk.slot.filter(x=>x.date==ds)].sort((p,q)=>p.s-q.s)],more=its.length-3;
-      return `<div class="calc ${d.getMonth()!=m?'off':''} ${ds==today()?'td':''}" onclick="CD='${ds}';CV=MOB()?'3d':'week';render()"><span class="dn">${d.getDate()==1?(d.getMonth()+1)+'/':''}${d.getDate()}</span>${its.slice(0,3).map(x=>chip(x,true)).join('')}${more>0?`<div class="more">他${more}件</div>`:''}</div>`}).join('')}</div></div>`}
+      return `<div class="calc ${d.getMonth()!=m?'off':''} ${ds==today()?'td':''}" onclick="CD='${ds}';CV='day';render()"><span class="dn">${d.getDate()==1?(d.getMonth()+1)+'/':''}${d.getDate()}</span>${its.slice(0,3).map(x=>chip(x,true)).join('')}${more>0?`<div class="more">他${more}件</div>`:''}</div>`}).join('')}</div></div>`}
   const P=ZOOM=='all'?(MOB()?0.5:0.62):1.1,H0=TL0,H1=TL1,hrs=[];for(let h=H0/60;h<H1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-H0)*P}px"><span>${h}:00</span></div>`);
   const nm=new Date().getHours()*60+new Date().getMinutes();
   const cols=days.map(ds=>{const it=[...g.ev.filter(x=>x.date==ds).map((x,i)=>({...x,k:'g'+i})),...tk.slot.filter(x=>x.date==ds).map((x,i)=>({...x,k:'t'+i}))].map(x=>({...x,s:Math.max(H0,x.s),e:Math.min(H1,Math.max(x.e,x.s+15))})).filter(x=>x.e>x.s);
     const {LAY,NAR}=layout(it);
-    return `<div class="wcol ${ds==today()?'td':''}">${it.map(x=>`<div class="blk ${x.task?'':'gev'} ${NAR[x.k]?'narrow':''} ${x.e-x.s<=45?'short':''} ${x.done?'done':''}" style="${LAY[x.k]}top:${(x.s-H0)*P}px;height:${Math.max(13,(x.e-x.s)*P)}px;${x.task?`background:${x.c};`:`--gc:${x.c};`}" title="${esc(x.t)} ${fm(x.s)}–${fm(x.e)}"><b>${esc(x.t)}</b><small>${fm(x.s)}–${fm(x.e)}</small></div>`).join('')}
+    return `<div class="wcol ${ds==today()?'td':''}" ${CV!='day'?`onclick="CD='${ds}';CV='day';render()"`:''}>${it.map(x=>`<div class="blk ${x.task?'':'gev'} ${NAR[x.k]?'narrow':''} ${x.e-x.s<=45?'short':''} ${x.done?'done':''}" style="${LAY[x.k]}top:${(x.s-H0)*P}px;height:${Math.max(13,(x.e-x.s)*P)}px;${x.task?`background:${x.c};`:`--gc:${x.c};`}" title="${esc(x.t)} ${fm(x.s)}–${fm(x.e)}"><b>${esc(x.t)}</b><small>${fm(x.s)}–${fm(x.e)}</small></div>`).join('')}
       ${ds==today()&&nm>=H0&&nm<H1?`<div class="now" style="top:${(nm-H0)*P}px"></div>`:''}</div>`});
-  return head+`<div class="calw" style="--n:${days.length}">
-    <div class="wh"><span></span>${days.map(ds=>{const d=new Date(ds+'T00:00');return `<button class="wd ${ds==today()?'td':''} ${d.getDay()==0?'sun':d.getDay()==6?'sat':''}" onclick="${ds==today()?"tab='today';render()":`CD='${ds}';CV='3d';render()`}"><small>${WD[d.getDay()]}</small><b>${d.getDate()}</b></button>`}).join('')}</div>
+  return head+`${CV=='day'&&CD!=today()?'':CV=='day'?`<p class="muted" style="margin:-4px 0 8px;font-size:12px">今日の時間割りの編集は <a href="#" onclick="tab='today';render();return false">「今日」画面</a> で</p>`:''}<div class="calw swipe" style="--n:${days.length}">
+    <div class="wh"><span></span>${days.map(ds=>{const d=new Date(ds+'T00:00');return `<button class="wd ${ds==today()?'td':''} ${d.getDay()==0?'sun':d.getDay()==6?'sat':''}" onclick="CD='${ds}';CV='day';render()"><small>${WD[d.getDay()]}</small><b>${d.getDate()}</b></button>`}).join('')}</div>
     <div class="wa"><span class="muted">終日</span>${days.map(ds=>`<div>${[...g.all.filter(x=>x.date==ds),...tk.due.filter(x=>x.date==ds)].map(x=>chip(x)).join('')}</div>`).join('')}</div>
     <div class="wb" style="--hp:${60*P}px"><div class="wt" style="height:${(H1-H0)*P}px">${hrs.join('')}</div>${cols.join('')}</div></div>
-    <p class="muted" style="font-size:12px">表示：Googleの予定（薄い色）・時間を割り当てたタスク（濃い色）・期限のあるタスク（終日欄）。日付を押すとその日を表示、今日を押すと「今日」画面へ。</p>`};
+    <p class="muted" style="font-size:12px">表示：Googleの予定（薄い色）・時間を割り当てたタスク（濃い色）・期限のあるタスク（終日欄）。日付や列をタップするとその日を表示。左右にフリック（スワイプ）で前後へ移動。</p>`};
 
 // ===== 今日のタイムライン（ドラッグで時間割り当て） =====
 const TL0=5*60,TL1=24*60,SNAP=15;let DR=null;
