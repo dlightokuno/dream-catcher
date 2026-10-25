@@ -524,7 +524,7 @@ function nextDue(base,t){const r=typeof t=='string'?t:t.repeat;t=typeof t=='stri
   if(r=='yearly')d.setFullYear(d.getFullYear()+1);return ymd(d)}
 function freeAt(len){const n=new Date();let m=Math.max(TL0,Math.ceil((n.getHours()*60+n.getMinutes())/15)*15);
   const busy=[...S.tasks.filter(slotOn).map(t=>[t.slot.start,t.slot.end]),...GEV.map(e=>[e.s,e.e])];while(m+len<=TL1&&busy.some(([a,b])=>m<b&&m+len>a))m+=15;return Math.max(TL0,Math.min(m,TL1-len))}
-function quickSlot(id){const t=S.tasks.find(x=>x.id==id),m=freeAt(60);t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save()}
+function quickSlot(id){const t=S.tasks.find(x=>x.id==id),m=freeAt(60);t.slot={date:today(),start:m,end:m+60};if(t.mit!==today())t.mit=today();save();openTP(id)}
 function habitToCal(hid){const h=S.habits.find(x=>x.id==hid),len=30,n=new Date();let m=Math.max(TL0,Math.ceil((n.getHours()*60+n.getMinutes())/15)*15);
   const busy=[...S.tasks.filter(slotOn).map(t=>[t.slot.start,t.slot.end]),...GEV.map(e=>[e.s,e.e])];while(m+len<=TL1&&busy.some(([a,b])=>m<b&&m+len>a))m+=15;if(m+len>TL1)m=TL1-len;
   const nid=newId();S.tasks.push({id:nid,title:h.title,habit:hid,goal:'',sub:'',due:today(),done:h.log.includes(today()),doneAt:'',mit:today(),cat:'daily',urgent:false,important:true,slot:{date:today(),start:m,end:m+len}});save();openTP(nid)}
@@ -790,7 +790,7 @@ function delIcs(i){icsList().splice(i,1);GEV=[];GALL=[];icsDay='';save();icsLoad
 let TP='';
 // 時間選択の欄は、欄の外をタップすると閉じる
 document.addEventListener('click',e=>{if(!TP)return;const el=e.target;if(el.closest&&(el.closest('#tpp')||el.closest('.tpb')||el.closest('.blk')))return;TP='';render()},true);
-function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'nearest',behavior:'smooth'}),30)}
+function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'center',behavior:'smooth'}),30)}
 function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
   const n=new Date(),nowm=Math.ceil((n.getHours()*60+n.getMinutes())/15)*15;
   const st=slotOn(t)?t.slot.start:Math.min(TL1-60,Math.max(TL0,nowm)),len=slotOn(t)?t.slot.end-t.slot.start:60;
