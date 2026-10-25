@@ -306,6 +306,9 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .dueb{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);white-space:nowrap}
 .dueb input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .dueb.late{border-color:var(--warn)}
+/* 同じ色のブロックが隣り合っても境目が見えるよう、背景色のふちを付ける */
+.blk{box-shadow:0 0 0 1.5px var(--card),0 2px 4px #0002!important;border-top:1px solid rgba(255,255,255,.35)}
+.blk.gev{border-top:0}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
