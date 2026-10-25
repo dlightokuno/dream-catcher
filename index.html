@@ -548,7 +548,7 @@ function render(){
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   app.innerHTML=V[tab]();
   addMk();
-  if(tab=='today'&&S.icsUrl&&icsDay!=today())setTimeout(()=>icsLoad());
+  if(tab=='today'&&S.icsUrl&&(icsDay!=today()||Date.now()-icsTs>10*60e3))setTimeout(()=>icsLoad());
   const tl=document.getElementById('tl');
   if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 }
@@ -643,7 +643,8 @@ function timeline(){
 // ===== Googleカレンダーの予定を取り込む（読み込みのみ・非公開iCal URL） =====
 let GEV=[],GALL=[],gstate='',icsDay='',icsAt='';
 function loadICAL(){return window.ICAL?Promise.resolve():new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js';sc.onload=ok;sc.onerror=ng;document.head.appendChild(sc)})}
-async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==today())return;icsDay=today();gstate='読み込み中…';render();
+let icsTs=0;
+async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==today()&&Date.now()-icsTs<10*60e3)return;icsDay=today();icsTs=Date.now();if(force)gstate='読み込み中…';render();
   try{await loadICAL();const r=await fetch('/api/ics?url='+encodeURIComponent(S.icsUrl));if(!r.ok)throw new Error(r.status);
     const comp=new ICAL.Component(ICAL.parse(await r.text()));comp.getAllSubcomponents('vtimezone').forEach(tz=>{try{ICAL.TimezoneService.register(tz)}catch(e){}});
     const d0=new Date();d0.setHours(0,0,0,0);const d1=new Date(d0);d1.setDate(d1.getDate()+1);
@@ -660,6 +661,9 @@ async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==tod
   catch(err){GEV=[];GALL=[];gstate='⚠ 読み込めませんでした';console.error(err)}
   render()}
 async function pasteIcs(){try{const t=await navigator.clipboard.readText();setIcs(t)}catch(e){alert('貼り付けを許可してください。うまくいかない場合は「うまく貼り付けられないとき」から手で貼ってください。');document.querySelector('.mbox details')?.setAttribute('open','')}}
+// 開いている間は10分ごと、画面に戻ってきたときにも自動で最新を取り込む
+setInterval(()=>{if(tab=='today'&&!document.hidden)icsLoad()},10*60e3);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&tab=='today')icsLoad()});
 function setIcs(v){v=v.trim();if(v&&!/^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\.ics$/.test(v)){alert('「iCal形式の非公開URL」を貼ってください（https://calendar.google.com/calendar/ical/…/basic.ics）');return}
   S.icsUrl=v;GEV=[];GALL=[];icsDay='';save();if(v)icsLoad(true);openSet()}
 
