@@ -646,7 +646,7 @@ function timeline(){
 
 // ===== Googleカレンダーの予定を取り込む（読み込みのみ・非公開iCal URL） =====
 let GEV=[],GALL=[],gstate='',icsDay='',icsAt='';
-const GCOL=['#7b8794','#e67c73','#f6bf26','#33b679','#039be5','#7986cb','#8e24aa','#f4511e','#616161','#d81b60'];
+const GCOL=['#7b8794','#d50000','#1a4fd6','#e67c73','#f6bf26','#33b679','#039be5','#7986cb','#8e24aa','#f4511e','#616161','#d81b60'];
 function icsCol(c,i){return c.color||GCOL[i%GCOL.length]}
 function icsList(){if(S.icsUrl&&!S.icsUrls){S.icsUrls=[{url:S.icsUrl,name:''}]}delete S.icsUrl;return S.icsUrls||(S.icsUrls=[])}
 function loadICAL(){return window.ICAL?Promise.resolve():new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js';sc.onload=ok;sc.onerror=ng;document.head.appendChild(sc)})}
