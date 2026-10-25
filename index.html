@@ -253,6 +253,16 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 @media(max-width:860px){.tl.all{height:auto}}
 .blk b{min-width:0}
 .blk.narrow{padding:1px 4px;flex-direction:column!important;align-items:stretch!important}.blk.narrow b{white-space:normal;word-break:break-all;line-height:1.15;font-size:11px}.blk.narrow small{display:none}.blk.narrow .bx{top:0;right:2px;transform:none;font-size:12px}
+@media(max-width:860px){
+  .tgrid{display:flex;flex-direction:column}
+  .tgrid>div:first-child{display:contents}
+  .tgrid>div:first-child>*{order:2}
+  .tgrid>div:first-child>h2:first-of-type,.tgrid>div:first-child>.card.mit,.tgrid>div:first-child>.card:first-child{order:0}
+  .tlcol{order:1}
+  .tlg{margin-left:34px}.hr{left:-34px}.hr span{font-size:10px}
+  .tl.all .blk{font-size:10.5px;padding:0 3px;border-radius:3px}
+  .blk.gev{border-left-width:3px}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -638,15 +648,18 @@ function addImgs(files){const o=O();[...files].slice(0,12-o.life.imgs.length).fo
 
 // ===== 今日のタイムライン（ドラッグで時間割り当て） =====
 const TL0=5*60,TL1=24*60,SNAP=15;let DR=null;
-let ZOOM=(()=>{try{return localStorage.getItem('dc-zoom')||'all'}catch(e){return 'all'}})(),PPM=ZOOM=='all'?0.62:1.4,MINH=ZOOM=='all'?13:20;
-function setZoom(z){ZOOM=z;PPM=z=='all'?0.62:1.4;MINH=z=='all'?13:20;try{localStorage.setItem('dc-zoom',z)}catch(e){}render();if(z=='detail'){const t=document.getElementById('tl'),n=new Date();if(t)t.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
+const MOB=()=>window.innerWidth<=860;
+let ZOOM=(()=>{try{return localStorage.getItem('dc-zoom')||'all'}catch(e){return 'all'}})(),PPM=ZOOM=='all'?(MOB()?0.5:0.62):1.4,MINH=ZOOM=='all'?13:20;
+function setZoom(z){ZOOM=z;PPM=z=='all'?(MOB()?0.5:0.62):1.4;MINH=z=='all'?13:20;try{localStorage.setItem('dc-zoom',z)}catch(e){}render();if(z=='detail'){const t=document.getElementById('tl'),n=new Date();if(t)t.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 const fm=m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
 function slotOn(t){return t.slot&&t.slot.date==today()}
 function timeline(){
   const ts=S.tasks.filter(slotOn),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   // 重なった予定は横に並べる（Googleカレンダー風）
   const items=[...ts.map(t=>({k:'t'+t.id,s:t.slot.start,e:Math.max(t.slot.end,t.slot.start+15)})),...GEV.map((e,i)=>({k:'g'+i,s:e.s,e:Math.max(e.e,e.s+15)}))].sort((a,b)=>a.s-b.s||b.e-a.e);
-  const LAY={},NAR={};let cl=[],cEnd=-1;const flush=()=>{const n=Math.max(...cl.map(x=>x.col))+1;cl.forEach(x=>(NAR[x.k]=n>=2)&&0||(LAY[x.k]=`left:calc(${x.col*100/n}% + 1px);width:calc(${100/n}% - 3px);right:auto;`));cl=[]};
+  const LAY={},NAR={};let cl=[],cEnd=-1;const flush=()=>{const n=Math.max(...cl.map(x=>x.col))+1;
+    cl.forEach(x=>{let sp=1;while(x.col+sp<n&&!cl.some(y=>y.col==x.col+sp&&y.s<x.e&&y.e>x.s))sp++;// 右側が空いていれば広げる
+      NAR[x.k]=sp*100/n<50;LAY[x.k]=`left:calc(${x.col*100/n}% + 1px);width:calc(${sp*100/n}% - 3px);right:auto;`});cl=[]};
   items.forEach(it=>{if(cl.length&&it.s>=cEnd){flush();cEnd=-1}const used=cl.filter(x=>x.e>it.s).map(x=>x.col);let c=0;while(used.includes(c))c++;it.col=c;cl.push(it);cEnd=Math.max(cEnd,it.e)});if(cl.length)flush();
   const hrs=[];for(let h=TL0/60;h<TL1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-TL0)*PPM}px"><span>${h}:00</span></div>`);
   const bl=ts.map(t=>`<div class="blk ${NAR['t'+t.id]?'narrow':''} ${t.done?'done':''} ${t.slot.end-t.slot.start<=(ZOOM=='all'?60:30)?'short':''}" data-id="${t.id}" style="${LAY['t'+t.id]||''}${t.cat&&CATS[t.cat]?`background:${CATS[t.cat][1]};`:''}top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(MINH,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
