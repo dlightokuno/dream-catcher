@@ -788,6 +788,8 @@ function setIcsCol(i,col){icsList()[i].color=col;GEV.length=0;icsDay='';save();i
 function delIcs(i){icsList().splice(i,1);GEV=[];GALL=[];icsDay='';save();icsLoad(true);openSet()}
 
 let TP='';
+// 時間選択の欄は、欄の外をタップすると閉じる
+document.addEventListener('click',e=>{if(!TP)return;const el=e.target;if(el.closest&&(el.closest('#tpp')||el.closest('.tpb')||el.closest('.blk')))return;TP='';render()},true);
 function openTP(id){TP=id;render();setTimeout(()=>document.getElementById('tpp')?.scrollIntoView({block:'nearest',behavior:'smooth'}),30)}
 function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
   const n=new Date(),nowm=Math.ceil((n.getHours()*60+n.getMinutes())/15)*15;
