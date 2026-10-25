@@ -234,6 +234,9 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .dp{display:flex;gap:2px}.dp button{font:inherit;font-size:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;padding:0}
 .dp button.on{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
 @media(max-width:600px){.ph,.pr{grid-template-columns:5.5em 1fr 1fr}.gear{padding:3px 8px;font-size:11px}}
+.mk{padding:5px 14px;font-size:13px}
+.mm li>.mk{margin-left:6px}
+.drop .mk{display:block;margin:0 0 8px auto}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -528,6 +531,12 @@ function exportData(){const a=document.createElement('a');a.href=URL.createObjec
 function importData(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(r.result);save()}catch(e){alert('読み込めませんでした')}};r.readAsText(el.files[0])}
 function tog(k){OPEN.has(k)?OPEN.delete(k):OPEN.add(k);render()}
 OPEN.add('root');
+// Enterで追加する入力欄に「作成」ボタンを自動で付ける
+function addMk(){document.querySelectorAll('#app input[onkeydown*="ent(event)"]:not(.ed)').forEach(i=>{
+  const box=i.parentElement;if(box.querySelector('.btn,.mk'))return;
+  const b=document.createElement('button');b.className='btn mk';b.type='button';b.textContent='作成';
+  b.onclick=()=>{if(!i.value.trim()){i.focus();return}i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))};
+  box.appendChild(b)})}
 function render(){
   if(S.skin!==undefined&&document.documentElement.dataset.skin!==(S.skin||undefined)){try{localStorage.setItem('dc-skin',S.skin)}catch(e){}applySkin(S.skin)}
   // 旧メモ機能のデータを削除（端末・クラウド両方）
@@ -535,6 +544,7 @@ function render(){
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   app.innerHTML=V[tab]();
+  addMk();
   const tl=document.getElementById('tl');
   if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 }
