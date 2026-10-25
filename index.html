@@ -321,8 +321,8 @@ function todayRow(t){
   const st=t.done?'done':t.started?'started':'';
   return `<div class="task ${t.done?'done':''} ${st} ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><span class="st">${t.done?'✅ 完了':t.started?'🔶 着手中':'⬜ 未着手'}</span>
    <span class="t">${qb(t)}${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${repLabel(t)}</span>`:''}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
-   <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
-   <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
+   <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')" title="手をつけた">🤚</button>
+   <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')" title="完全にできた">☑️</button>
    ${slotOn(t)?`<button class="sb tpb" title="時間を選び直す" onclick="openTP('${t.id}')">時間変更</button>`:`<button class="sb addb" title="空いている時間にカレンダーへ追加" onclick="quickSlot('${t.id}')">追加</button>`}
    ${catBtn(t)}
    <button class="sb backb" title="今日から外してタスク管理のリストに戻す" onclick="mit('${t.id}')">リストに戻す</button></div>`}
