@@ -629,7 +629,7 @@ function timeline(){
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
   const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(20,(e.e-e.s)*PPM)}px" title="Googleカレンダーの予定"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
-  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${S.icsUrl&&!SAMPLE?`<span class="gc">📅 Google予定 ${gstate}</span><button class="ghost" title="再読み込み" onclick="icsLoad(true)">↻</button>`:''}</div>
+  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${S.icsUrl&&!SAMPLE?`<button class="btn" style="padding:4px 12px;font-size:12px" onclick="icsLoad(true)">🔄 最新の予定を取り込む</button><span class="muted" style="font-size:11px">${gstate||(icsAt?icsAt+' 取り込み':'')}</span>`:''}</div>
    <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
    ${tpPanel()}
    ${GALL.length?`<div class="allday">${GALL.map(x=>`<span>📅 ${esc(x)}</span>`).join('')}</div>`:''}
@@ -637,7 +637,7 @@ function timeline(){
    ${nm>=TL0&&nm<TL1?`<div class="now" style="top:${(nm-TL0)*PPM}px"></div>`:''}${ev}${bl}</div></div>`}
 
 // ===== Googleカレンダーの予定を取り込む（読み込みのみ・非公開iCal URL） =====
-let GEV=[],GALL=[],gstate='',icsDay='';
+let GEV=[],GALL=[],gstate='',icsDay='',icsAt='';
 function loadICAL(){return window.ICAL?Promise.resolve():new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js';sc.onload=ok;sc.onerror=ng;document.head.appendChild(sc)})}
 async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==today())return;icsDay=today();gstate='読み込み中…';render();
   try{await loadICAL();const r=await fetch('/api/ics?url='+encodeURIComponent(S.icsUrl));if(!r.ok)throw new Error(r.status);
@@ -652,7 +652,7 @@ async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==tod
       if(e.isRecurring()){const it=e.iterator();let t,n=0;while((t=it.next())&&n++<3000){const od=e.getOccurrenceDetails(t),a=od.startDate.toJSDate();if(a>=d1)break;
           if((od.item.component.getFirstPropertyValue('status')||'')=='CANCELLED')continue;add(od.item.summary||'(予定)',od.startDate,od.endDate,od.startDate.isDate)}}
       else add(e.summary||'(予定)',e.startDate,e.endDate,e.startDate.isDate)});
-    GEV=ev.filter(x=>x.e>x.s).sort((a,b)=>a.s-b.s);GALL=all;gstate='';}
+    GEV=ev.filter(x=>x.e>x.s).sort((a,b)=>a.s-b.s);GALL=all;gstate='';const n=new Date();icsAt=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');}
   catch(err){GEV=[];GALL=[];gstate='⚠ 読み込めませんでした';console.error(err)}
   render()}
 function setIcs(v){v=v.trim();if(v&&!/^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\.ics$/.test(v)){alert('「iCal形式の非公開URL」を貼ってください（https://calendar.google.com/calendar/ical/…/basic.ics）');return}
