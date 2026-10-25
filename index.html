@@ -320,9 +320,9 @@ function todayRow(t){
    <span class="t">${qb(t)}${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${repLabel(t)}</span>`:''}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
    <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')">手をつけた</button>
    <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')">完全にできた</button>
-   <button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button>
+   <button class="sb tpb" title="カレンダーに追加（時間を選ぶ）" onclick="openTP('${t.id}')">${slotOn(t)?'時間変更':'追加'}</button>
    ${catBtn(t)}
-   <button class="x" title="今日から外す" onclick="mit('${t.id}')">↩</button></div>`}
+   <button class="sb" title="今日から外してタスク管理のリストに戻す" onclick="mit('${t.id}')">リストに戻す</button></div>`}
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
 let EDIT='';
 const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8']};
@@ -397,7 +397,7 @@ map(){
    <div class="mm"><ul>${node('root','root',ed('vision','',S.vision,'＋ ビジョン（将来のなりたい姿）を書く'),'',goals)}</ul></div>`;
 },
 today(){
-  const mits=S.tasks.filter(t=>t.mit===today());
+  const mits=S.tasks.filter(t=>t.mit===today()&&!t.habit);
   const due=S.tasks.filter(t=>!t.done&&t.mit!==today()&&t.due&&t.due<=today());
   const doneToday=S.tasks.filter(t=>t.doneAt===today()).length;
   const pool=S.tasks.filter(t=>!t.done&&t.mit!==today()).sort((a,b)=>(a.due||'9999')<(b.due||'9999')?-1:1);
@@ -408,13 +408,13 @@ today(){
   <h2>＋ 今日のタスクを新しく追加</h2>
   <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><select id="qc">${catOpts()}</select><select id="qq" title="第何象限か">${qOpts()}</select><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
   <h2>＋ タスク管理から選ぶ <span class="muted">${pool.length}件 ・ 期限が近い順</span></h2>
-  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><button class="sb tpb" title="時間を選ぶ" onclick="openTP('${t.id}')">🕘</button><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${qb(t)}${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
+  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><button class="sb tpb" title="カレンダーに追加（時間を選ぶ）" onclick="openTP('${t.id}')">${slotOn(t)?'時間変更':'追加'}</button><button class="btn" style="padding:3px 10px;font-size:13px" onclick="mit('${t.id}')">＋ 今日やる</button><span class="t">${qb(t)}${esc(t.title)}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
   <h2>期限が今日・過ぎたもの</h2><div class="card">${due.length?due.map(taskRow).join(''):'<p class="muted">なし 🎉</p>'}</div>
-  <h2>今日の習慣</h2><div class="card">${S.habits.length?S.habits.map(h=>`<div class="task ${h.log.includes(today())?'done':''}"><input type="checkbox" ${h.log.includes(today())?'checked':''} onchange="habit('${h.id}','${today()}')"><span class="t">${esc(h.title)}</span><span class="muted">🔥${streak(h)}日</span></div>`).join(''):'<p class="muted">習慣タブで追加</p>'}</div></div>
+  <h2>今日の習慣</h2><div class="card">${S.habits.length?S.habits.map(h=>`<div class="task ${h.log.includes(today())?'done':''}"><input type="checkbox" ${h.log.includes(today())?'checked':''} onchange="habit('${h.id}','${today()}')"><span class="t">${esc(h.title)}</span><span class="muted">🔥${streak(h)}日</span>${(()=>{const ht=S.tasks.find(t=>t.habit==h.id&&slotOn(t));return ht?`<span class="tm">🕘 ${fm(ht.slot.start)}–${fm(ht.slot.end)}</span>`:`<button class="sb" onclick="habitToCal('${h.id}')">カレンダーに追加</button>`})()}</div>`).join(''):'<p class="muted">習慣タブで追加</p>'}</div></div>
   <div class="tlcol">${timeline()}</div></div>`;
 },
 inbox(){
-  const open=S.tasks.filter(t=>!t.done);
+  const open=S.tasks.filter(t=>!t.done&&!t.habit);
   const done=S.tasks.filter(t=>t.done).slice(-15).reverse();
   return `<h2>思いついたらまず放り込む</h2>${quickAdd(true)}
   <h2>未完了 ${open.length}</h2><div class="card">${open.map(taskRow).join('')||'<p class="muted">空っぽ</p>'}</div>
@@ -520,7 +520,11 @@ function nextDue(base,t){const r=typeof t=='string'?t:t.repeat;t=typeof t=='stri
   if(r=='monthly'){const want=t.rdate??b.getDate(),pick=(y,m)=>{const last=new Date(y,m+1,0).getDate();return new Date(y,m,want==0?last:Math.min(want,last))};
     let c=pick(d.getFullYear(),d.getMonth());if(c<=d)c=pick(d.getFullYear(),d.getMonth()+1);return ymd(c)}
   if(r=='yearly')d.setFullYear(d.getFullYear()+1);return ymd(d)}
+function habitToCal(hid){const h=S.habits.find(x=>x.id==hid),len=30,n=new Date();let m=Math.max(TL0,Math.ceil((n.getHours()*60+n.getMinutes())/15)*15);
+  const busy=[...S.tasks.filter(slotOn).map(t=>[t.slot.start,t.slot.end]),...GEV.map(e=>[e.s,e.e])];while(m+len<=TL1&&busy.some(([a,b])=>m<b&&m+len>a))m+=15;if(m+len>TL1)m=TL1-len;
+  S.tasks.push({id:newId(),title:h.title,habit:hid,goal:'',sub:'',due:today(),done:h.log.includes(today()),doneAt:'',mit:today(),cat:'daily',urgent:false,important:true,slot:{date:today(),start:m,end:m+len}});save()}
 function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.done?today():'';
+  if(t.habit){const h=S.habits.find(x=>x.id==t.habit);if(h){const has=h.log.includes(today());if(t.done&&!has)h.log.push(today());if(!t.done&&has)h.log=h.log.filter(x=>x!=today())}}
   if(t.done&&t.repeat&&!t.spawned){t.spawned=id();S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:'',spawned:'',due:nextDue(t.due||today(),t)})}
   else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
   save()}
@@ -574,7 +578,7 @@ function delKr(i,k){S.goals.find(g=>g.id==i).krs.splice(k,1);save()}
 function mv(k){let[y,m]=HM.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}HM=y+'-'+String(m).padStart(2,'0');render()}
 function addHabit(){const t=ht.value.trim();if(!t)return;S.habits.push({id:id(),title:t,log:[]});save()}
 function delHabit(i){S.habits=S.habits.filter(h=>h.id!=i);save()}
-function habit(i,d){const h=S.habits.find(h=>h.id==i);h.log=h.log.includes(d)?h.log.filter(x=>x!=d):[...h.log,d];save()}
+function habit(i,d){const h=S.habits.find(h=>h.id==i);h.log=h.log.includes(d)?h.log.filter(x=>x!=d):[...h.log,d];if(d==today())S.tasks.filter(t=>t.habit==i&&t.mit==today()).forEach(t=>{t.done=h.log.includes(d);t.doneAt=t.done?today():''});save()}
 function streak(h){let n=0,d=new Date();if(!h.log.includes(today()))d.setDate(d.getDate()-1);while(h.log.includes(ymd(d))){n++;d.setDate(d.getDate()-1)}return n}
 function addReview(){const t=rv.value.trim();if(!t)return;const w=new Date();w.setDate(w.getDate()-7);S.reviews.push({date:today(),text:t,n:S.tasks.filter(x=>x.doneAt&&x.doneAt>=ymd(w)).length});save()}
 function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='dreamcatcher-'+today()+'.json';a.click()}
@@ -789,7 +793,7 @@ function tpPanel(){const t=S.tasks.find(x=>x.id==TP);if(!t)return '';
    <div class="row">開始 <select id="tps">${opts.join('')}</select> 長さ <select id="tpl">${lens.map(l=>`<option value="${l}" ${l==len?'selected':''}>${l<60?l+'分':l%60?Math.floor(l/60)+'時間'+l%60+'分':l/60+'時間'}</option>`).join('')}</select></div>
    <div class="row"><button class="btn" onclick="setTP()">決定</button>${slotOn(t)?`<button class="ghost" onclick="TP='';unslot('${t.id}')">カレンダーから外す</button>`:''}<button class="ghost" onclick="TP='';render()">キャンセル</button></div></div>`}
 function setTP(){const t=S.tasks.find(x=>x.id==TP);const s0=+tps.value,l=+tpl.value;t.slot={date:today(),start:s0,end:Math.min(TL1,s0+l)};if(t.mit!==today())t.mit=today();TP='';save()}
-function unslot(i){const t=S.tasks.find(t=>t.id==i);t.slot=null;save()}
+function unslot(i){const t=S.tasks.find(t=>t.id==i);if(t.habit){S.tasks=S.tasks.filter(x=>x!==t);save();return}t.slot=null;save()}
 function dstart(e,id,mode){if(e.button>0)return;e.preventDefault();const t=S.tasks.find(t=>t.id==id);
   DR={id,mode,y0:e.clientY,orig:t.slot?{...t.slot}:null,el:mode=='new'?null:document.querySelector(`.blk[data-id="${id}"]`),cur:null};
   if(mode=='new'){const g=document.createElement('div');g.className='ghost-drag';g.textContent=t.title;document.body.appendChild(g);DR.ghost=g;mvGhost(e)}
