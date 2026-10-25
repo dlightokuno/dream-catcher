@@ -190,7 +190,7 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .cb{font:inherit;font-size:12px;padding:3px 8px;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:99px;cursor:pointer;white-space:nowrap}
 .cb.on{border-color:var(--cat);color:var(--cat);font-weight:700}
 .cdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--cat);margin-right:4px;vertical-align:middle}
-.qb{font-size:11px;font-weight:700;margin-right:4px;color:var(--sub);font-family:Georgia,serif}
+.qb{font-size:14px;font-weight:700;margin-right:4px;color:var(--sub)}
 .qb.q1{color:var(--warn)}.qb.q2{color:var(--acc)}
 .blk .qb{color:inherit}
 .gear{white-space:nowrap}
@@ -277,12 +277,12 @@ function todayRow(t){
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
 let EDIT='';
 const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8']};
-const QN=['','I','II','III','IV'];
+const QN=['','①','②','③','④'];
 function qOf(t){return t.important&&t.urgent?1:t.important?2:t.urgent?3:4}
-function qb(t){return `<span class="qb q${qOf(t)}" title="第${qOf(t)}象限">(${QN[qOf(t)]})</span>`}
+function qb(t){return `<span class="qb q${qOf(t)}" title="第${qOf(t)}象限">${QN[qOf(t)]}</span>`}
 function catStyle(t){return t.cat&&CATS[t.cat]?`style="--cat:${CATS[t.cat][1]}"`:''}
 function catBtn(t){const c=CATS[t.cat];return `<button class="cb ${c?'on':''}" ${catStyle(t)} title="色分け（押すたびに切替）" onclick="cycCat('${t.id}')">${c?'● '+c[0]:'○ 色'}</button>`}
-function qOpts(){return `<option value="0">象限：自動</option><option value="1">(I) 重要×緊急</option><option value="2">(II) 重要×緊急でない</option><option value="3">(III) 重要でない×緊急</option><option value="4">(IV) 重要でない×緊急でない</option>`}
+function qOpts(){return `<option value="0">象限：自動</option><option value="1">① 重要×緊急</option><option value="2">② 重要×緊急でない</option><option value="3">③ 重要でない×緊急</option><option value="4">④ 重要でない×緊急でない</option>`}
 function catOpts(){return `<option value="">色なし</option>`+Object.entries(CATS).map(([k,[l]])=>`<option value="${k}">● ${l}</option>`).join('')}
 function cycCat(i){const t=S.tasks.find(t=>t.id==i),ks=['',...Object.keys(CATS)];t.cat=ks[(ks.indexOf(t.cat||'')+1)%ks.length];save()}
 function ed(kind,path,val,ph){const k=kind+':'+path;
@@ -618,7 +618,7 @@ function timeline(){
   const ts=S.tasks.filter(slotOn),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   const hrs=[];for(let h=TL0/60;h<TL1/60;h++)hrs.push(`<div class="hr" style="top:${(h*60-TL0)*PPM}px"><span>${h}:00</span></div>`);
   const bl=ts.map(t=>`<div class="blk ${t.done?'done':''} ${t.slot.end-t.slot.start<=30?'short':''}" data-id="${t.id}" style="${t.cat&&CATS[t.cat]?`background:${CATS[t.cat][1]};`:''}top:${(t.slot.start-TL0)*PPM}px;height:${Math.max(20,(t.slot.end-t.slot.start)*PPM)}px" onpointerdown="dstart(event,'${t.id}','move')">
-     <b>(${QN[qOf(t)]}) ${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
+     <b>${QN[qOf(t)]} ${esc(t.title)}</b><small class="bt">${fm(t.slot.start)}–${fm(t.slot.end)}</small>
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
   return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2></div>
