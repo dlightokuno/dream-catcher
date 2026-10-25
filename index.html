@@ -302,6 +302,10 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
   .wbs td:nth-child(2){grid-column:1/-1;justify-self:start;max-width:100%;overflow:hidden}.wbs td:nth-child(2) .tag{max-width:100%}
   .wbs td:last-child{justify-self:end;font-size:13px}
 }
+.dl{font-size:11px;font-weight:700;color:var(--acc);margin-left:2px}.dl.soon{color:#b7791f}.dl.over{color:var(--warn)}
+.dueb{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);white-space:nowrap}
+.dueb input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.dueb.late{border-color:var(--warn)}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -344,6 +348,9 @@ let EDIT='';
 const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8']};
 const QN=['','①','②','③','④'];
 function qOf(t){return t.important&&t.urgent?1:t.important?2:t.urgent?3:4}
+function dueTxt(d,done){const x=new Date(d+'T00:00'),n=Math.round((x-new Date(today()+'T00:00'))/864e5),WD='日月火水木金土';
+  const md=`${x.getMonth()+1}月${x.getDate()}日(${WD[x.getDay()]})`;if(done)return md;
+  return `${md} <b class="dl ${n<0?'over':n<=3?'soon':''}">${n<0?(-n)+'日超過':n==0?'今日まで':'あと'+n+'日'}</b>`}
 function qb(t){return `<span class="qb q${qOf(t)}" title="第${qOf(t)}象限">${QN[qOf(t)]}</span>`}
 function catStyle(t){return t.cat&&CATS[t.cat]?`style="--cat:${CATS[t.cat][1]}"`:''}
 function catBtn(t){const c=CATS[t.cat];return `<button class="cb ${c?'on':''}" ${catStyle(t)} title="色分け（押すたびに切替）" onclick="cycCat('${t.id}')">${c?'● '+c[0]:'○ 色'}</button>`}
@@ -369,7 +376,7 @@ function taskRow(t){
    <input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')">
    <span class="t">${qb(t)}${ed('t',t.id,t.title)}</span>
    ${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}
-   ${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}
+   ${t.due?`<span class="due ${late?'late':''}">${dueTxt(t.due,t.done)}</span>`:''}
    ${t.done?(t.repeat?`<span class="muted">${repLabel(t)}</span>`:''):`<button class="rp ${t.repeat?'on':''}" title="繰り返し設定" onclick="RPO=RPO=='${t.id}'?'':'${t.id}';render()">${t.repeat?repLabel(t):'🔁 繰り返し'}</button>`}
    <button class="ghost" onclick="mit('${t.id}')">${t.mit===today()?'★':'☆'}</button>
    ${catBtn(t)}
@@ -423,7 +430,7 @@ today(){
   <h2>＋ 今日のタスクを新しく追加</h2>
   <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><select id="qc">${catOpts()}</select><select id="qq" title="第何象限か">${qOpts()}</select><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
   <h2>＋ タスク管理から選ぶ <span class="muted">${pool.length}件 ・ 期限が近い順</span></h2>
-  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span>${slotOn(t)?`<button class="sb tpb" title="時間を選び直す" onclick="openTP('${t.id}')">時間変更</button>`:`<button class="sb addb" title="空いている時間にカレンダーへ追加" onclick="quickSlot('${t.id}')">＋ 追加</button>`}<span class="t">${qb(t)}${esc(t.title)}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${t.due.slice(5)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
+  <div class="card">${pool.length?`<input placeholder="🔍 絞り込み" style="width:100%;margin-bottom:6px" oninput="const q=this.value;document.querySelectorAll('.pool').forEach(r=>r.style.display=r.textContent.includes(q)?'':'none')">`+pool.map(t=>{const late=t.due&&t.due<today();return `<div class="task pool ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span>${slotOn(t)?`<button class="sb tpb" title="時間を選び直す" onclick="openTP('${t.id}')">時間変更</button>`:`<button class="sb addb" title="空いている時間にカレンダーへ追加" onclick="quickSlot('${t.id}')">＋ 追加</button>`}<span class="t">${qb(t)}${esc(t.title)}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:''}${t.due?`<span class="due ${late?'late':''}">${dueTxt(t.due,t.done)}</span>`:''}</div>`}).join(''):'<p class="muted">タスク管理に未完了のタスクがありません</p>'}</div>
   <h2>期限が今日・過ぎたもの</h2><div class="card">${due.length?due.map(taskRow).join(''):'<p class="muted">なし 🎉</p>'}</div>
   <h2>今日の習慣</h2><div class="card">${S.habits.length?S.habits.map(h=>`<div class="task ${h.log.includes(today())?'done':''}"><input type="checkbox" ${h.log.includes(today())?'checked':''} onchange="habit('${h.id}','${today()}')"><span class="t">${esc(h.title)}</span><span class="muted">🔥${streak(h)}日</span>${(()=>{const ht=S.tasks.find(t=>t.habit==h.id&&slotOn(t));return ht?`<span class="tm">🕘 ${fm(ht.slot.start)}–${fm(ht.slot.end)}</span><button class="sb tpb" onclick="openTP('${ht.id}')">時間変更</button>`:`<button class="sb addb" onclick="event.stopPropagation();habitToCal('${h.id}')">カレンダーに追加</button>`})()}</div>`).join(''):'<p class="muted">習慣タブで追加</p>'}</div></div>
   <div class="tlcol">${timeline()}</div></div>`;
@@ -475,7 +482,7 @@ wbs(){
     rows+=`<tr class="${t.done?'done':''}"><td><input type="checkbox" ${t.done?'checked':''} onchange="toggle('${t.id}')"> <span class="t">${t.cat&&CATS[t.cat]?`<span class="cdot" ${catStyle(t)}></span>`:''}${qb(t)}${ed('t',t.id,t.title)}</span></td>
      <td>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:'—'}</td>
      <td><select onchange="setPri('${t.id}',this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${pri(t)==n?'selected':''}>${PL[n]}</option>`).join('')}</select></td>
-     <td><input type="date" value="${t.due||''}" class="${late?'late':''}" onchange="setT('${t.id}','due',this.value)"></td>
+     <td><label class="dueb ${late?'late':''}">${t.due?dueTxt(t.due,t.done):'<span class="muted">期限なし</span>'}<input type="date" value="${t.due||''}" onclick="try{this.showPicker()}catch(e){}" onchange="setT('${t.id}','due',this.value)"></label></td>
      <td>${t.done?'完了':t.started?'🔶 着手中':late?'<span style="color:var(--warn)">遅れ</span>':t.mit===today()?'★今日':'未着手'}</td></tr>`});
   return `<h2>全タスク一覧（WBS）</h2>
   <div class="row" style="margin-bottom:10px"><span class="muted">並び替え：</span>
