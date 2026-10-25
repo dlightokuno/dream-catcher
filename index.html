@@ -113,7 +113,10 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .nd .c{font-size:12px;color:var(--sub)}
 .nd.root .c{color:inherit}
 .drag{cursor:grab;background:var(--card)}.dragging{opacity:.4}.drop.over{outline:2px dashed var(--acc);background:var(--acc2)}
-.wbs{width:100%;border-collapse:collapse;min-width:640px}
+.wbs{width:100%;border-collapse:collapse;table-layout:auto}
+.wbs td:first-child{overflow-wrap:anywhere;min-width:12em}
+.wbs td:nth-child(n+2){white-space:nowrap;width:1%}
+.wbs .tag{max-width:9em}
 .wbs th{text-align:left;font-size:13px;color:var(--sub);padding:10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
 .wbs th.on{color:var(--acc)}
 .wbs td{padding:6px 10px;border-bottom:1px solid var(--line)}
@@ -146,7 +149,6 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
   .mm ul{padding-left:14px}.mm li{padding-left:12px}.mm ul ul li::after{width:10px}
   .nd{font-size:13px;padding:6px 10px;flex-wrap:wrap;border-radius:12px}
   .mm li>input{min-width:0;width:100%}
-  .wbs{min-width:560px}
 }
 .qsel{font-size:12px;padding:2px 4px}
 .hd.blank{display:none}
@@ -291,6 +293,15 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .sb.backb{border-color:#d69e2e;background:#fdf3dc;color:#9c6b12;font-weight:600}
 @media(max-width:600px){.tpp{left:12px;right:12px;width:auto;bottom:calc(64px + env(safe-area-inset-bottom));padding:10px 12px;gap:6px}.tpp .row>select{width:auto;flex:1}.tpp p{display:none}}
 .blk.sel{outline:3px solid var(--warn);outline-offset:1px;z-index:5}
+@media(max-width:900px){
+  .wbs thead{display:none}
+  .wbs tr{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:2px 6px;border-bottom:1px solid var(--line);padding:6px 8px}
+  .wbs td{border:0;padding:0;width:auto!important}
+  .wbs td:first-child{grid-column:1/-1}
+  .wbs tr.grp{display:block;padding:0}.wbs tr.grp td{padding:6px 8px}
+  .wbs td:nth-child(2){grid-column:1/-1;justify-self:start;max-width:100%;overflow:hidden}.wbs td:nth-child(2) .tag{max-width:100%}
+  .wbs td:last-child{justify-self:end;font-size:13px}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -451,7 +462,7 @@ matrix(){
 },
 wbs(){
   const pri=t=>t.important&&t.urgent?1:t.important?2:t.urgent?3:4;
-  const PL=['','第１象限（重要×緊急）','第２象限（重要×緊急ではない）','第３象限（重要ではない×緊急）','第４象限（重要ではない×緊急ではない）'];
+  const PL=['','①','②','③','④'];
   const keys={goal:t=>(S.goals.findIndex(g=>g.id==t.goal)+1||999),pri,due:t=>t.due||'9999',status:t=>t.done?1:0,title:t=>t.title};
   let ts=S.tasks.filter(t=>SHOWDONE||!t.done);
   ts=ts.slice().sort((a,b)=>{const x=keys[SORT](a),y=keys[SORT](b);return x<y?-1:x>y?1:(a.due||'9999')<(b.due||'9999')?-1:1});
