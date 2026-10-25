@@ -345,7 +345,7 @@ function todayRow(t){
    <button class="sb backb" title="今日から外してタスク管理のリストに戻す" onclick="mit('${t.id}')">リストに戻す</button></div>`}
 function start(i){const t=S.tasks.find(t=>t.id==i);if(t.done){t.done=false;t.doneAt=''}t.started=t.started?'':today();save()}
 let EDIT='';
-const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8']};
+const CATS={work:['仕事','#d64545'],private:['プライベート','#e0b100'],daily:['デイリー','#3b7dd8'],task:['タスク','#2e9e5b']};
 const QN=['','①','②','③','④'];
 function qOf(t){return t.important&&t.urgent?1:t.important?2:t.urgent?3:4}
 function dueTxt(d,done){const x=new Date(d+'T00:00'),n=Math.round((x-new Date(today()+'T00:00'))/864e5),WD='日月火水木金土';
