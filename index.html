@@ -238,6 +238,7 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 .mm li>.mk{margin-left:6px}
 .drop .mk{display:block;margin:0 0 8px auto}
 .howto{padding-left:20px;margin:6px 0}.howto li{margin:2px 0}
+.steps{display:flex;flex-direction:column;gap:10px;margin:6px 0}.step{display:flex;gap:10px;align-items:flex-start}.step>b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--bg);display:flex;align-items:center;justify-content:center}.step p{margin:6px 0 0}.step .btn{display:inline-block;text-decoration:none}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -563,8 +564,11 @@ function openSet(){closeSet();const cur=skinNow();document.body.insertAdjacentHT
   <p class="muted">色はログインしている端末どうしで同期されます。</p>
   <h3>Googleカレンダーの予定を取り込む（表示のみ）</h3>
   ${S.icsUrl?`<p>✅ 設定済み：「今日」のカレンダーに予定がグレーで表示されます。</p><button class="ghost" onclick="setIcs('')">解除する</button>`:
-  `<ol class="muted howto"><li>パソコンで <a href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noopener">Googleカレンダーの設定</a> を開く</li><li>左の「マイカレンダーの設定」から自分のカレンダーを選ぶ</li><li>「カレンダーの統合」→「<b>iCal 形式の非公開アドレス</b>」をコピー</li><li>下に貼って「保存」</li></ol>
-  <div class="row"><input id="icsin" class="grow" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"><button class="btn" onclick="setIcs(icsin.value)">保存</button></div>
+  `<div class="steps">
+   <div class="step"><b>1</b><div><a class="btn" href="https://calendar.google.com/calendar/r/settings/calendar/${encodeURIComponent(fbUser&&fbUser.email?btoa(fbUser.email).replace(/=+$/,''):'')}" target="_blank" rel="noopener" onclick="if(!fbUser||!fbUser.email){this.href='https://calendar.google.com/calendar/r/settings'}">Googleカレンダーの設定を開く ↗</a>
+     <p class="muted">開いたページを下へスクロールし、「<b>iCal 形式の非公開アドレス</b>」の横のコピーボタンを押す<br><small>（ページが違うときは左の「マイカレンダーの設定」で自分の名前を選ぶ）</small></p></div></div>
+   <div class="step"><b>2</b><div><button class="btn" onclick="pasteIcs()">📋 コピーしたアドレスを貼り付けて保存</button></div></div></div>
+  <details class="muted"><summary>うまく貼り付けられないとき</summary><div class="row" style="margin-top:6px"><input id="icsin" class="grow" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"><button class="ghost" onclick="setIcs(icsin.value)">保存</button></div></details>
   <p class="muted">※ 非公開アドレスは他人に教えないでください。保存先はあなた専用のデータだけです。Googleカレンダー側には何も書き込みません。</p>`}</div></div>`)}
 function closeSet(){document.getElementById('setm')?.remove()}
 
@@ -629,7 +633,7 @@ function timeline(){
      <span class="bx" title="カレンダーから外す" onpointerdown="event.stopPropagation()" onclick="unslot('${t.id}')">×</span>
      <span class="rz" title="ドラッグで長さを変更" onpointerdown="event.stopPropagation();dstart(event,'${t.id}','resize')"></span></div>`).join('');
   const ev=GEV.map(e=>`<div class="blk gev ${e.e-e.s<=30?'short':''}" style="top:${(e.s-TL0)*PPM}px;height:${Math.max(20,(e.e-e.s)*PPM)}px" title="Googleカレンダーの予定"><b>${esc(e.t)}</b><small>${fm(e.s)}–${fm(e.e)}</small></div>`).join('');
-  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${S.icsUrl&&!SAMPLE?`<button class="btn" style="padding:4px 12px;font-size:12px" onclick="icsLoad(true)">🔄 最新の予定を取り込む</button><span class="muted" style="font-size:11px">${gstate||(icsAt?icsAt+' 取り込み':'')}</span>`:''}</div>
+  return `<div class="tlhead"><h2 style="margin:0">今日のカレンダー</h2>${!S.icsUrl&&!SAMPLE?`<button class="ghost" style="font-size:12px" onclick="openSet();setTimeout(()=>document.querySelector('.steps')?.scrollIntoView({block:'center'}),50)">📅 Googleの予定を表示する</button>`:''}${S.icsUrl&&!SAMPLE?`<button class="btn" style="padding:4px 12px;font-size:12px" onclick="icsLoad(true)">🔄 最新の予定を取り込む</button><span class="muted" style="font-size:11px">${gstate||(icsAt?icsAt+' 取り込み':'')}</span>`:''}</div>
    <p class="muted" style="margin:4px 0 8px">タスクの ⠿ をドラッグするか 🕘 をタップして時間を設定。ブロックはドラッグで移動、下の端で長さ変更、タップで時間を選び直し。</p>
    ${tpPanel()}
    ${GALL.length?`<div class="allday">${GALL.map(x=>`<span>📅 ${esc(x)}</span>`).join('')}</div>`:''}
@@ -655,6 +659,7 @@ async function icsLoad(force){if(!S.icsUrl||SAMPLE)return;if(!force&&icsDay==tod
     GEV=ev.filter(x=>x.e>x.s).sort((a,b)=>a.s-b.s);GALL=all;gstate='';const n=new Date();icsAt=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');}
   catch(err){GEV=[];GALL=[];gstate='⚠ 読み込めませんでした';console.error(err)}
   render()}
+async function pasteIcs(){try{const t=await navigator.clipboard.readText();setIcs(t)}catch(e){alert('貼り付けを許可してください。うまくいかない場合は「うまく貼り付けられないとき」から手で貼ってください。');document.querySelector('.mbox details')?.setAttribute('open','')}}
 function setIcs(v){v=v.trim();if(v&&!/^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\.ics$/.test(v)){alert('「iCal形式の非公開URL」を貼ってください（https://calendar.google.com/calendar/ical/…/basic.ics）');return}
   S.icsUrl=v;GEV=[];GALL=[];icsDay='';save();if(v)icsLoad(true);openSet()}
 
