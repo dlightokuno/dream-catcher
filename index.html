@@ -155,7 +155,8 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 @media(max-width:600px){.hd.blank{display:flex}}
 @media(hover:hover){.qsel{display:none}}
 .sbar{background:#fdf3dc;color:#7a5410;font-size:13px;padding:8px 16px;text-align:center}.sbar a{color:inherit;font-weight:700;margin-left:8px}
-.tgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.tgrid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+@media(min-width:861px){.tgrid>.tlcol{order:-1}}
 .tlcol{position:sticky;top:70px}
 .tlhead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:28px}
 .tl{height:min(70vh,640px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;position:relative}
