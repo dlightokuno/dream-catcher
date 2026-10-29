@@ -329,7 +329,7 @@ const id=()=>Math.random().toString(36).slice(2,9);
 const newId=()=>id();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TABS={today:'今日',cal:'カレンダー',map:'目標マインドマップ',goals:'目標',inbox:'タスク管理',matrix:'優先度',wbs:'一覧(WBS)',habits:'習慣',review:'週次レビュー',other:'その他'};
-let tab='map';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
+let tab='today';let HM=today().slice(0,7);let SORT='goal',SHOWDONE=true;const OPEN=new Set();
 
 function goalName(gid){const g=S.goals.find(g=>g.id==gid);return g?g.title:''}
 function subName(t){const g=S.goals.find(g=>g.id==t.goal),sb=g&&(g.subs||[]).find(x=>x.id==t.sub);return sb?' › '+sb.title:''}
