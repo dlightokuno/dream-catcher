@@ -633,11 +633,12 @@ function addMk(){document.querySelectorAll('#app input[onkeydown*="ent(event)"]:
   const b=document.createElement('button');b.className='btn mk';b.type='button';b.textContent='作成';
   b.onclick=()=>{if(!i.value.trim()){i.focus();return}i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))};
   box.appendChild(b)})}
+function go(k){tab=k;TP='';render();window.scrollTo({top:0,behavior:'instant'});document.querySelectorAll('#tl,.calw .wb').forEach(e=>e.scrollTop=e.scrollTop)}
 function render(){
   if(S.skin!==undefined&&document.documentElement.dataset.skin!==(S.skin||undefined)){try{localStorage.setItem('dc-skin',S.skin)}catch(e){}applySkin(S.skin)}
   // 旧メモ機能のデータを削除（端末・クラウド両方）
   if((S.tasks||[]).some(t=>'note' in t)){S.tasks.forEach(t=>delete t.note);setTimeout(save)}
-  nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
+  nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="go('${k}')">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
   const ow=document.querySelector('.calw .wb'),sw=ow?ow.scrollTop:null;
   app.innerHTML=V[tab]();
