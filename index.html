@@ -436,7 +436,7 @@ today(){
   const doneToday=S.tasks.filter(t=>t.doneAt===today()).length;
   const pool=S.tasks.filter(t=>!t.done&&t.mit!==today()).sort((a,b)=>(a.due||'9999')<(b.due||'9999')?-1:1);
   return `<div class="tgrid"><div>${S.vision?`<div class="card"><div class="muted">ビジョン</div><div class="vision">${esc(S.vision)}</div></div>`:''}
-  <h2>今日のタスク<span class="muted"> 完了 ${mits.filter(t=>t.done).length} ・ 着手中 ${mits.filter(t=>t.started&&!t.done).length} ・ 全${mits.length}件</span></h2>
+  <h2>今日のタスク<span class="muted"> 完了 ${mits.filter(t=>t.done).length} ・ 途中 ${mits.filter(t=>t.started&&!t.done).length} ・ 全${mits.length}件</span></h2>
   <div class="card mit">${mits.length?mits.map(todayRow).join(''):'<p class="muted">下の「新しく追加」か「タスク管理から選ぶ」で、今日やることを決めましょう。</p>'}</div>
   <h2>＋ 今日のタスクを新しく追加</h2>
   <div class="card row"><input id="qa" class="grow" placeholder="今日やることを入力して Enter" onkeydown="if(ent(event))addTask(this.value,qg.value,qd.value,true)"><select id="qg">${goalOpts()}</select><input id="qd" type="date" value="${today()}"><span class="qtm" title="時間を入れると自動でカレンダーに入ります">🕘<input id="qts" type="time" step="900" onchange="if(this.value&&!qte.value){const [h,m]=this.value.split(':').map(Number),e=Math.min(1439,h*60+m+60);qte.value=String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0')}">〜<input id="qte" type="time" step="900"></span><select id="qc">${catOpts()}</select><select id="qq" title="第何象限か">${qOpts()}</select><button class="btn" onclick="addTask(qa.value,qg.value,qd.value,true)">追加</button></div>
