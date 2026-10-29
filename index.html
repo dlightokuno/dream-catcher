@@ -347,10 +347,10 @@ function goalProgress(g){
 }
 function todayRow(t){
   const st=t.done?'done':t.started?'started':'';
-  return `<div class="task ${t.done?'done':''} ${st} ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><span class="st">${t.done?'✅ 完了':t.started?'🔶 着手中':'⬜ 未着手'}</span>
+  return `<div class="task ${t.done?'done':''} ${st} ${t.cat?'hascat':''}" ${catStyle(t)}><span class="grip" title="ドラッグしてカレンダーへ" onpointerdown="dstart(event,'${t.id}','new')">⠿</span><span class="st">${t.done?'✅ 完了':t.started?'🔶 途中':'⬜ 未着手'}</span>
    <span class="t">${qb(t)}${ed('t',t.id,t.title)}${t.repeat?` <span class="muted">${repLabel(t)}</span>`:''}${slotOn(t)?` <span class="tm">🕘 ${fm(t.slot.start)}–${fm(t.slot.end)}</span>`:''}</span>${t.goal?`<span class="tag">${esc(goalName(t.goal))}</span>`:''}
-   <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')" title="手をつけた">🤚</button>
-   <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')" title="完全にできた">☑️</button>
+   <button class="sb ${t.started&&!t.done?'on2':''}" onclick="start('${t.id}')" title="手をつけた">途中</button>
+   <button class="sb ${t.done?'on':''}" onclick="toggle('${t.id}')" title="完全にできた">完了</button>
    ${slotOn(t)?`<button class="sb tpb" title="時間を選び直す" onclick="openTP('${t.id}')">時間変更</button>`:`<button class="sb addb" title="空いている時間にカレンダーへ追加" onclick="quickSlot('${t.id}')">追加</button>`}
    ${catBtn(t)}
    <button class="sb backb" title="今日から外してタスク管理のリストに戻す" onclick="mit('${t.id}')">リストに戻す</button></div>`}
@@ -494,7 +494,7 @@ wbs(){
      <td>${t.goal?`<span class="tag">${esc(goalName(t.goal)+subName(t))}</span>`:'—'}</td>
      <td><select onchange="setPri('${t.id}',this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${pri(t)==n?'selected':''}>${PL[n]}</option>`).join('')}</select></td>
      <td><label class="dueb ${late?'late':''}">${t.due?dueTxt(t.due,t.done):'<span class="muted">期限なし</span>'}<input type="date" value="${t.due||''}" onclick="try{this.showPicker()}catch(e){}" onchange="setT('${t.id}','due',this.value)"></label></td>
-     <td>${t.done?'完了':t.started?'🔶 着手中':late?'<span style="color:var(--warn)">遅れ</span>':t.mit===today()?'★今日':'未着手'}</td></tr>`});
+     <td>${t.done?'完了':t.started?'🔶 途中':late?'<span style="color:var(--warn)">遅れ</span>':t.mit===today()?'★今日':'未着手'}</td></tr>`});
   return `<h2>全タスク一覧（WBS）</h2>
   <div class="row" style="margin-bottom:10px"><span class="muted">並び替え：</span>
    ${[['goal','目標別'],['pri','象限順'],['due','期限が近い順'],['status','未完了を上に']].map(([k,l])=>`<button class="${SORT==k?'btn':'ghost'}" onclick="SORT='${k}';render()">${l}</button>`).join('')}
