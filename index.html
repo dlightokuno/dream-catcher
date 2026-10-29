@@ -556,7 +556,7 @@ function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.do
   if(t.done&&t.repeat&&!t.spawned){t.spawned=id();S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:'',spawned:'',due:nextDue(t.due||today(),t)})}
   else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
   save()}
-function mit(i){const t=S.tasks.find(t=>t.id==i);t.mit=t.mit===today()?'':today();save()}
+function mit(i){const t=S.tasks.find(t=>t.id==i);if(t.mit===today()){t.mit='';if(slotOn(t))t.slot=null}else t.mit=today();save()}
 function delTask(i){const t=S.tasks.find(t=>t.id==i);S.tasks=S.tasks.filter(t=>t.id!=i);save()}
 function dropTo(e,u,i){e.preventDefault();const t=S.tasks.find(t=>t.id==e.dataTransfer.getData('text/plain'));if(t){t.urgent=!!u;t.important=!!i;save()}}
 function setPri(i,n){const t=S.tasks.find(t=>t.id==i);n=+n;t.important=n<=2;t.urgent=n==1||n==3;save()}
