@@ -309,6 +309,11 @@ input.ed{font-size:14px;padding:3px 8px;min-width:200px;border:1.5px solid var(-
 /* 同じ色のブロックが隣り合っても境目が見えるよう、背景色のふちを付ける */
 .blk{box-shadow:0 0 0 1.5px var(--card),0 2px 4px #0002!important;border-top:1px solid rgba(255,255,255,.35)}
 .blk.gev{border-top:0}
+/* PC：カレンダーだけを単体でスクロールできるように */
+@media(min-width:861px){
+  .tl,.tl.all{height:calc(100vh - 230px);min-height:360px;overflow-y:auto;overscroll-behavior:contain}
+  .calw .wb{max-height:calc(100vh - 300px);min-height:360px;overflow-y:auto;overscroll-behavior:contain}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -625,11 +630,13 @@ function render(){
   if((S.tasks||[]).some(t=>'note' in t)){S.tasks.forEach(t=>delete t.note);setTimeout(save)}
   nav.innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${v}${k=='inbox'?' '+S.tasks.filter(t=>!t.done).length:''}</button>`).join('');
   const ot=document.getElementById('tl'),st=ot?ot.scrollTop:null,sy=window.scrollY;
+  const ow=document.querySelector('.calw .wb'),sw=ow?ow.scrollTop:null;
   app.innerHTML=V[tab]();
   addMk();
   document.getElementById('tpp')?.remove();if(tab=='today'&&TP)document.body.insertAdjacentHTML('beforeend',tpPanel());
   if(tab=='today'&&icsList().length&&(icsDay!=today()||Date.now()-icsTs>10*60e3))setTimeout(()=>icsLoad());
   const tl=document.getElementById('tl');
+  const wb=document.querySelector('.calw .wb');if(wb){if(sw!==null)wb.scrollTop=sw;else{const n=new Date(),P=ZOOM=='all'?(MOB()?0.5:0.62):1.1;wb.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-90)*P)}}
   if(tl){if(st!==null)tl.scrollTop=st;else{const n=new Date();tl.scrollTop=Math.max(0,(n.getHours()*60+n.getMinutes()-TL0-60)*PPM)}}
 }
 // ===== 設定（テーマ） =====
