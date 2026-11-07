@@ -530,7 +530,7 @@ function quickAdd(big){return `<div class="card row"><input id="qa" class="grow"
 function addTask(title,goal,due,isMit){if(!title.trim())return;const qr=document.getElementById('qr'),rep=qr?qr.value:'',rx={};const tm=v=>{if(!v)return null;const[h,m]=v.split(':').map(Number);return h*60+m};
   const ts0=tm(document.getElementById('qts')?.value),te0=tm(document.getElementById('qte')?.value);let slot=null;
   if(ts0!=null){const d=due||today();slot={date:d,start:ts0,end:te0!=null&&te0>ts0?te0:Math.min(1440,ts0+60)};if(d==today())isMit=true}if(rep=='monthly'&&document.getElementById('qrd'))rx.rdate=+qrd.value;if((rep=='weekly'||rep=='biweekly')&&document.getElementById('qrx')){const ds=[...qrx.querySelectorAll('input:checked')].map(c=>+c.value);if(ds.length)rx.rdays=ds}if(rep=='everyn'&&document.getElementById('qrn'))rx.rn=Math.max(1,+qrn.value||1);const qc=document.getElementById('qc'),cat=qc?qc.value:'',qq=document.getElementById('qq'),qv=qq?+qq.value:0;let sub='';[goal,sub]=(goal||'').split('|');S.tasks.push({id:id(),title:title.trim(),goal:goal||'',sub:sub||'',due:due||'',done:false,mit:isMit?today():'',repeat:rep,...rx,slot,cat,urgent:qv?(qv==1||qv==3):false,important:qv?qv<=2:!!goal});save();setTimeout(()=>document.getElementById(goal&&tab=='goals'?'ga'+goal:'qa')?.focus())}
-const REP={'':'🔁 なし',daily:'🔁 毎日',everyn:'🔁 ○日ごと',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
+const REP={'':'🔁 なし',after:'🔁 完了後',daily:'🔁 毎日',everyn:'🔁 ○日ごと',weekdays:'🔁 平日',weekly:'🔁 毎週',biweekly:'🔁 隔週',monthly:'🔁 毎月',yearly:'🔁 毎年'};
 const WDN='日月火水木金土';let RPO='';
 function qrExtra(){const r=qr.value,x=document.getElementById('qrx'),dd=new Date();
   x.innerHTML=r=='monthly'?`毎月 <select id="qrd">${[...Array(31)].map((_,i)=>`<option value="${i+1}" ${dd.getDate()==i+1?'selected':''}>${i+1}日</option>`).join('')}<option value="0">末日</option></select>`
@@ -549,7 +549,7 @@ function repPanel(t){const r=t.repeat||'',ds=t.rdays&&t.rdays.length?t.rdays:[ba
   ${r=='everyn'?`<div class="row"><input type="number" min="1" max="365" value="${t.rn||2}" style="width:80px" onchange="setT('${t.id}','rn',Math.max(1,+this.value||1))"> 日ごと</div>`:''}
   ${r=='weekly'||r=='biweekly'?`<div class="row">曜日：${[1,2,3,4,5,6,0].map(i=>`<button class="wdb ${ds.includes(i)?'on':''} ${i==0?'sun':i==6?'sat':''}" onclick="togDay('${t.id}',${i})">${WDN[i]}</button>`).join('')}</div>`:''}
   ${r=='monthly'?`<div class="row">毎月 <select onchange="setT('${t.id}','rdate',+this.value)">${[...Array(31)].map((_,i)=>`<option value="${i+1}" ${dt==i+1?'selected':''}>${i+1}日</option>`).join('')}<option value="0" ${dt==0?'selected':''}>末日</option></select> <span class="muted">（31日など無い月は末日）</span></div>`:''}
-  ${r?`<div class="muted">次の予定：完了すると ${nextDue(t.due||today(),t).replace(/-/g,'/')} に次のタスクができます</div>`:''}</div>`}
+  ${r=='after'?`<div class="muted">「完了」を押すと、すぐに同じタスクがもう一度リストに出てきます</div>`:r?`<div class="muted">次の予定：完了すると ${nextDue(t.due||today(),t).replace(/-/g,'/')} に次のタスクができます</div>`:''}</div>`}
 function togDay(i,d){const t=S.tasks.find(t=>t.id==i);let ds=t.rdays&&t.rdays.length?t.rdays.slice():[baseDate(t).getDay()];ds=ds.includes(d)?ds.filter(x=>x!=d):[...ds,d];if(!ds.length)return;t.rdays=ds;save()}
 function nextDue(base,t){const r=typeof t=='string'?t:t.repeat;t=typeof t=='string'?{}:t;
   const d=new Date((base>today()?base:today())+'T00:00'),b=new Date(base+'T00:00');
@@ -568,7 +568,7 @@ function habitToCal(hid){const h=S.habits.find(x=>x.id==hid),len=30,n=new Date()
   const nid=newId();S.tasks.push({id:nid,title:h.title,habit:hid,goal:'',sub:'',due:today(),done:h.log.includes(today()),doneAt:'',mit:today(),cat:'daily',urgent:false,important:true,slot:{date:today(),start:m,end:m+len}});save();openTP(nid)}
 function toggle(i){const t=S.tasks.find(t=>t.id==i);t.done=!t.done;t.doneAt=t.done?today():'';
   if(t.habit){const h=S.habits.find(x=>x.id==t.habit);if(h){const has=h.log.includes(today());if(t.done&&!has)h.log.push(today());if(!t.done&&has)h.log=h.log.filter(x=>x!=today())}}
-  if(t.done&&t.repeat&&!t.spawned){t.spawned=id();{const nd=nextDue(t.due||today(),t);S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:nd==today()?today():'',spawned:'',due:nd,slot:t.slot?{date:nd,start:t.slot.start,end:t.slot.end}:null})}}
+  if(t.done&&t.repeat&&!t.spawned){t.spawned=id();{if(t.repeat=='after'){S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',spawned:'',mit:t.mit,slot:null})}else{const nd=nextDue(t.due||today(),t);S.tasks.push({...t,id:t.spawned,done:false,doneAt:'',started:'',mit:nd==today()?today():'',spawned:'',due:nd,slot:t.slot?{date:nd,start:t.slot.start,end:t.slot.end}:null})}}}
   else if(!t.done&&t.spawned){const n=S.tasks.find(x=>x.id==t.spawned);if(n&&!n.done)S.tasks=S.tasks.filter(x=>x!==n);t.spawned=''}
   save()}
 function mit(i){const t=S.tasks.find(t=>t.id==i);if(t.mit===today()){t.mit='';if(slotOn(t))t.slot=null}else t.mit=today();save()}
